@@ -1,6 +1,6 @@
 class Api::ActionPagesController < Api::BaseController
   include CountryHelper
-
+  
   def show
     page = movement.find_published_page(params[:id])
     language = Language.find_by_iso_code(I18n.locale)
@@ -16,15 +16,12 @@ class Api::ActionPagesController < Api::BaseController
   def member_fields
     page = movement.find_published_page(params[:id])
     member = User.find_by_email_and_movement_id(params[:email], movement.id)
-
     if member
       fields_to_display = member_fields_to_display(page.non_hidden_user_details, member.entered_fields)
     else
       fields_to_display = page.non_hidden_user_details
     end
-
     fields_to_display.delete('postcode') if should_delete_postcode params, member
-
     render :json => {
       :member_fields => fields_to_display,
     }, :callback => params[:callback]

@@ -17,7 +17,6 @@
 
 # "Petition Ask" module -- requests that user signs a petition
 class PetitionModule < ContentModule
-
   has_many :petition_signatures, :foreign_key => :content_module_id
   option_fields :signatures_goal, :thermometer_threshold, :button_text, :petition_statement, :custom_fields,
       :comment_label, :comment_text, :comments_enabled
@@ -54,21 +53,40 @@ class PetitionModule < ContentModule
 
   def take_action(user, action_info, page)
     return if PetitionSignature.where(:content_module_id => self.id, :user_id => user.id).count > 0
+    Resque.enqueue(Jobs::SignPetition, user.id, action_info, page.id, self.id)
+  end
+
+  #this is normally run by the background job
+  def sign_petition(user_id, action_info, page_id, petition_module_id)
     petition_signature = PetitionSignature.new(petition_signature_attributes_hash)
-    petition_signature.user = user
+    page = Page.find(page_id)
+    petition_signature.user = User.find(user_id)
     petition_signature.action_page = page
     petition_signature.email = action_info[:email] if action_info.present?
     petition_signature.comment = action_info[:comment] if action_info.present?
     petition_signature.save
-    petition_signature
+    increment_signature_count(page.id.to_s)
   end
 
   def signatures
     page = pages.first
     return 0 unless page
     crowdring_url = page.movement.crowdring_url
-    PetitionSignature.where(:page_id => page.id).count +
+    signature_count(page.id) +
       (crowdring_url.present? && page.crowdring_campaign_name.present? ? crowdring_member_count(crowdring_url, page.crowdring_campaign_name).to_i : 0 )
+  end
+
+  def signature_count(page_id)
+    counter = Rails.cache.fetch("petition_signature_count_page_id_#{page_id}", expires_in: 24.hours, raw: true) do
+      PetitionSignature.where(:page_id => page_id).count
+    end
+    return counter.to_i
+  end
+
+  def increment_signature_count(page_id)
+    if signature_count(page_id)
+      Rails.cache.increment("petition_signature_count_page_id_#{page_id}", 1)
+    end
   end
 
   def crowdring_member_count(crowdring_url, crowdring_campaign_name)
