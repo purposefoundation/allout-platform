@@ -19,6 +19,10 @@ require "spec_helper"
 require "ostruct"
 
 describe PetitionModule do
+
+  before :each do
+    Resque.inline = true
+  end
   def validated_petition_module(attrs)
     default_attrs = {active: 'true'}
     pm = FactoryGirl.create(:petition_module)
@@ -52,7 +56,7 @@ describe PetitionModule do
   describe "if crowdring_url is set for movement" do
     let(:petition) {validated_petition_module(:title => 'A very popular action!')}
 
-    before do
+    before :each do
       Rails.cache.clear
     end
 
@@ -114,6 +118,10 @@ describe PetitionModule do
   end
 
   describe "serializing to json" do
+    before :each do
+      Rails.cache.clear
+    end
+
     it "includes the current signatures count value" do
       petition = validated_petition_module(:title => 'A very popular action!')
       action_page = FactoryGirl.create(:action_page)
@@ -225,6 +233,7 @@ describe PetitionModule do
       @pm.take_action(@user, {}, @page)
     end
 
+    #this won't work because the emails come over because we decode them
     it "should create a user activity event with an email reference" do
       @email = FactoryGirl.create(:email)
       UserActivityEvent.should_receive(:action_taken!).with(@user, @page, @pm, an_instance_of(PetitionSignature), @email, nil)

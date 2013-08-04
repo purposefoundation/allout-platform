@@ -52,17 +52,22 @@ class PetitionModule < ContentModule
   placeable_in SIDEBAR
 
   def take_action(user, action_info, page)
+   #Rails.logger.debug "TAKE_ACTION_DEBUG: petition_module.take_action #{action_info}"
     return if PetitionSignature.where(:content_module_id => self.id, :user_id => user.id).count > 0
-    Resque.enqueue(Jobs::SignPetition, user.id, action_info, page.id, self.id)
+    Resque.enqueue(Jobs::SignPetition, user.id, action_info.symbolize_keys, page.id, self.id)
   end
 
   #this is normally run by the background job
   def sign_petition(user_id, action_info, page_id, petition_module_id)
+    action_info.symbolize_keys!
     petition_signature = PetitionSignature.new(petition_signature_attributes_hash)
     page = Page.find(page_id)
     petition_signature.user = User.find(user_id)
     petition_signature.action_page = page
-    petition_signature.email = action_info[:email] if action_info.present?
+    if action_info.present? && action_info[:email].present?
+      action_info[:email].symbolize_keys!
+      petition_signature.email = Email.find(action_info[:email][:id]) 
+    end
     petition_signature.comment = action_info[:comment] if action_info.present?
     petition_signature.save
     increment_signature_count(page.id.to_s)
@@ -84,8 +89,10 @@ class PetitionModule < ContentModule
   end
 
   def increment_signature_count(page_id)
-    if signature_count(page_id)
+    if Rails.cache.read("petition_signature_count_page_id_#{page_id}", raw: true)
       Rails.cache.increment("petition_signature_count_page_id_#{page_id}", 1)
+    else
+      signature_count(page_id)
     end
   end
 

@@ -3,7 +3,7 @@ class Api::ActionPagesController < Api::BaseController
   
   def show
     page = movement.find_published_page(params[:id])
-    language = Language.find_by_iso_code(I18n.locale)
+    language = Language.find_by_iso_code_cache(params[:locale])
     if page.language_enabled? language
       render :json => merge_join_and_member_count_attrs(page.as_json(language: language, email: params[:email], member_has_joined: params[:member_has_joined]), page)
     else
@@ -36,8 +36,8 @@ class Api::ActionPagesController < Api::BaseController
     member = member_scope.first || member_scope.build
 
     begin
-      member.take_action_on!(@page, action_info_from(params), member_attributes)
-
+      action_info = action_info_from(params)
+      member.take_action_on!(@page, action_info, member_attributes)
       render :status => :created,
               :json => {
                 :next_page_identifier => @page.next.try(:slug),
@@ -123,7 +123,8 @@ class Api::ActionPagesController < Api::BaseController
 
   def action_info_from(params)
     action_info = (params[:action_info].is_a? Hash) ? params[:action_info] : {}
-    action_info.merge(:email => identify_email)
+    email = identify_email || params[:email] || nil
+    action_info.merge(:email => email)
   end
 
 end
