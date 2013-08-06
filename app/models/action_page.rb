@@ -224,15 +224,28 @@ class ActionPage < Page
     self.name = copy_attribute_with_next_version(:name)
   end
 
+  def count_actions
+    cache_key = "count_actions_for_page_#{self.id}"
+    Rails.cache.fetch(cache_key, expires_in: 24.hours, raw: true) do
+      UserActivityEvent.where(:activity => UserActivityEvent::Activity::ACTION_TAKEN, :page_id => self.id).count
+    end
+  end
+
+  def update_page_action_taken_counter
+    cache_key = "count_actions_for_page_#{self.id}"
+    if Rails.cache.read(cache_key, raw: true)
+      Rails.cache.increment(cache_key, 1)
+    else
+      count_actions
+    end
+  end
+  
   private
 
   def share_counts
     Share.counts(self.id) if self.is_tell_a_friend?
   end
 
-  def count_actions
-    UserActivityEvent.where(:activity => UserActivityEvent::Activity::ACTION_TAKEN, :page_id => self.id).count
-  end
 
   def seed_initial_module
     return if self.seeded_module.blank?
