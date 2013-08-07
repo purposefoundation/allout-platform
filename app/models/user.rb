@@ -68,7 +68,7 @@ class User < ActiveRecord::Base
   validates_uniqueness_of :email, :scope => :movement_id
 
   before_save :downcase_email
-  after_create :assign_random_value
+  after_create :async_assign_random_value
 
   scope :for_movement, lambda { |movement| where(:movement_id => movement.try(:id)) }
   scope :subscribed, where(:is_member => true)
@@ -213,11 +213,15 @@ class User < ActiveRecord::Base
     country_iso.try(:upcase)
   end
 
+  def assign_random_value
+    self.random = rand()
+    self.save
+  end
+
   private
 
-  def assign_random_value
-    self.connection.execute("update users set random = rand() where id = #{self.id} and movement_id = #{self.movement_id}")
-    self.reload
+  def async_assign_random_value
+    Resque.enqueue(Jobs::AssignRandomValueToUser, self.id)
   end
 
   def downcase_email
