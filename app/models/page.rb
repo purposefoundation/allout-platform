@@ -43,7 +43,6 @@ class Page < ActiveRecord::Base
   default_scope where(:live_page_id => nil)
   scope :for_preview, ->(movement_id){ where(:deleted_at => nil, :movement_id => movement_id)}
   
-
   after_save :clean_page_cache
 
   belongs_to :movement

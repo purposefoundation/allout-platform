@@ -1,2 +1,4 @@
 <% title "New List" %>
-<%= render :partial => "form", :locals => {:show_save_button => true} %>
+<% cache 'new_list_cache_#{@blast.updated_at.to_i}' do %>
+  <%= render :partial => "form", :locals => {:show_save_button => true} %>
+<% end %>

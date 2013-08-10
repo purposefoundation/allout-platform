@@ -9,11 +9,7 @@ describe Admin::AdminController do
 
   def perform_request
     with_routing do |map|
-<<<<<<< HEAD
-      map.draw { match 'admin/(:movement_id)' => 'admin#index' }
-=======
       map.draw { match 'admin/movements/(:movement_id)' => 'admin#index' }
->>>>>>> develop
       yield
     end
   end

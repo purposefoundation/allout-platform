@@ -3,18 +3,16 @@ class Api::MovementsController < Api::BaseController
 
   #before_filter :homepage_content, :only => [:show]
 
-  caches_action :show, :expires_in => AppConstants.default_cache_timeout, :race_condition_ttl => 30.seconds, :cache_path => Proc.new {|c| "#{I18n.locale}#{c.request.path}" }
+  caches_action :show, :expires_in => 24.hours, :race_condition_ttl => 30.seconds, :cache_path => Proc.new {|c| "#{I18n.locale}#{c.request.path}" }
   cache_sweeper Api::MovementSweeper
 
   def show
-    homepage_content 
-    
+    homepage = params[:draft_homepage_id].blank? ? movement.homepage : movement.draft_homepages.where(:id => params[:draft_homepage_id]).first
+    @homepage_content = build_homepage_content(homepage) 
+    @featured_content_collections = build_featured_content_collections(homepage)
     languages = movement.languages.map do |lang|
       {:iso_code => lang.iso_code, :name => lang.name, :native_name => lang.native_name, :is_default => (lang == movement.default_language)}
     end
-
-    track_page_view_from_email
-
     render :json => {
         languages: languages,
         recommended_languages_to_display: languages_to_display,
@@ -25,13 +23,16 @@ class Api::MovementsController < Api::BaseController
 
   protected
 
-  def homepage_content
-    homepage = params[:draft_homepage_id].blank? ? movement.homepage : movement.draft_homepages.where(:id => params[:draft_homepage_id]).first
+  def build_homepage_content(homepage)
     @homepage_content ||= homepage.homepage_contents.by_iso_code(I18n.locale).first
-    @featured_content_collections = {}
+  end
+
+  def build_featured_content_collections(homepage)
+    featured_content_collections = {}
     homepage.featured_content_collections.each do |fcc|
-      @featured_content_collections[fcc.contantized_name] = fcc.valid_modules_for_language(I18n.locale).sort_by(&:position)
+      featured_content_collections[fcc.contantized_name] = fcc.valid_modules_for_language(I18n.locale).sort_by(&:position)
     end
+    featured_content_collections
   end
 
   def homepage_attributes
