@@ -22,6 +22,7 @@ class Country
   REGIONS['20'] = "Oceania - Melanesia"
   REGIONS['21'] = "Oceania - Micronesia"
   REGIONS['22'] = "Oceania - Polynesia"
+  REGIONS['23'] = "No Man's Land"
 
   COUNTRIES = ActiveSupport::OrderedHash.new
   COUNTRIES["AF"] = {name: "AFGHANISTAN", zone: 3, region_id: 12, commonwealth: false}
@@ -254,6 +255,7 @@ class Country
   COUNTRIES["YE"] = {name: "YEMEN", zone: 3, region_id: 14, commonwealth: false}
   COUNTRIES["ZM"] = {name: "ZAMBIA", zone: 2, region_id: 1, commonwealth: true}
   COUNTRIES["ZW"] = {name: "ZIMBABWE", zone: 2, region_id: 1, commonwealth: false}
+  COUNTRIES["00"] = {name: "NULL", zone: 5, region_id: 23, commonwealth: false }
 
   def self.select_options
     COUNTRIES.map { |iso, country| [country[:name], country[:name]] }

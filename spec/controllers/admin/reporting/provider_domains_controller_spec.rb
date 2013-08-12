@@ -36,6 +36,7 @@ describe Admin::Reporting::ProviderDomainsController do
 
   describe "GET index" do
     it "assigns all admin_reporting_provider_domains as @admin_reporting_provider_domains" do
+      pending "Implementation"
       provider_domain = Admin::Reporting::ProviderDomain.create! valid_attributes
       get :index, {}, valid_session
       assigns(:admin_reporting_provider_domains).should eq([provider_domain])
@@ -44,6 +45,7 @@ describe Admin::Reporting::ProviderDomainsController do
 
   describe "GET show" do
     it "assigns the requested admin_reporting as @admin_reporting" do
+      pending "Implementation"
       provider_domain = Admin::Reporting::ProviderDomain.create! valid_attributes
       get :show, {:id => provider_domain.to_param}, valid_session
       assigns(:admin_reporting).should eq(provider_domain)
@@ -52,6 +54,7 @@ describe Admin::Reporting::ProviderDomainsController do
 
   describe "GET new" do
     it "assigns a new admin_reporting as @admin_reporting" do
+      pending "Implementation"
       get :new, {}, valid_session
       assigns(:admin_reporting).should be_a_new(Admin::Reporting::ProviderDomain)
     end
@@ -59,6 +62,7 @@ describe Admin::Reporting::ProviderDomainsController do
 
   describe "GET edit" do
     it "assigns the requested admin_reporting as @admin_reporting" do
+      pending "Implementation"
       provider_domain = Admin::Reporting::ProviderDomain.create! valid_attributes
       get :edit, {:id => provider_domain.to_param}, valid_session
       assigns(:admin_reporting).should eq(provider_domain)
@@ -68,18 +72,21 @@ describe Admin::Reporting::ProviderDomainsController do
   describe "POST create" do
     describe "with valid params" do
       it "creates a new Admin::Reporting::ProviderDomain" do
+        pending "Implementation"
         expect {
           post :create, {:admin_reporting => valid_attributes}, valid_session
         }.to change(Admin::Reporting::ProviderDomain, :count).by(1)
       end
 
       it "assigns a newly created admin_reporting as @admin_reporting" do
+        pending "Implementation"
         post :create, {:admin_reporting => valid_attributes}, valid_session
         assigns(:admin_reporting).should be_a(Admin::Reporting::ProviderDomain)
         assigns(:admin_reporting).should be_persisted
       end
 
       it "redirects to the created admin_reporting" do
+        pending "Implementation"
         post :create, {:admin_reporting => valid_attributes}, valid_session
         response.should redirect_to(Admin::Reporting::ProviderDomain.last)
       end
@@ -87,6 +94,7 @@ describe Admin::Reporting::ProviderDomainsController do
 
     describe "with invalid params" do
       it "assigns a newly created but unsaved admin_reporting as @admin_reporting" do
+        pending "Implementation"
         # Trigger the behavior that occurs when invalid params are submitted
         Admin::Reporting::ProviderDomain.any_instance.stub(:save).and_return(false)
         post :create, {:admin_reporting => { "domain" => "invalid value" }}, valid_session
@@ -94,6 +102,7 @@ describe Admin::Reporting::ProviderDomainsController do
       end
 
       it "re-renders the 'new' template" do
+        pending "Implementation"
         # Trigger the behavior that occurs when invalid params are submitted
         Admin::Reporting::ProviderDomain.any_instance.stub(:save).and_return(false)
         post :create, {:admin_reporting => { "domain" => "invalid value" }}, valid_session
@@ -105,6 +114,7 @@ describe Admin::Reporting::ProviderDomainsController do
   describe "PUT update" do
     describe "with valid params" do
       it "updates the requested admin_reporting" do
+        pending "Implementation"
         provider_domain = Admin::Reporting::ProviderDomain.create! valid_attributes
         # Assuming there are no other admin_reporting_provider_domains in the database, this
         # specifies that the Admin::Reporting::ProviderDomain created on the previous line
@@ -115,12 +125,14 @@ describe Admin::Reporting::ProviderDomainsController do
       end
 
       it "assigns the requested admin_reporting as @admin_reporting" do
+        pending "Implementation"
         provider_domain = Admin::Reporting::ProviderDomain.create! valid_attributes
         put :update, {:id => provider_domain.to_param, :admin_reporting => valid_attributes}, valid_session
         assigns(:admin_reporting).should eq(provider_domain)
       end
 
       it "redirects to the admin_reporting" do
+        pending "Implementation"
         provider_domain = Admin::Reporting::ProviderDomain.create! valid_attributes
         put :update, {:id => provider_domain.to_param, :admin_reporting => valid_attributes}, valid_session
         response.should redirect_to(provider_domain)
@@ -129,6 +141,7 @@ describe Admin::Reporting::ProviderDomainsController do
 
     describe "with invalid params" do
       it "assigns the admin_reporting as @admin_reporting" do
+        pending "Implementation"
         provider_domain = Admin::Reporting::ProviderDomain.create! valid_attributes
         # Trigger the behavior that occurs when invalid params are submitted
         Admin::Reporting::ProviderDomain.any_instance.stub(:save).and_return(false)
@@ -137,6 +150,7 @@ describe Admin::Reporting::ProviderDomainsController do
       end
 
       it "re-renders the 'edit' template" do
+        pending "Implementation"
         provider_domain = Admin::Reporting::ProviderDomain.create! valid_attributes
         # Trigger the behavior that occurs when invalid params are submitted
         Admin::Reporting::ProviderDomain.any_instance.stub(:save).and_return(false)
@@ -148,6 +162,7 @@ describe Admin::Reporting::ProviderDomainsController do
 
   describe "DELETE destroy" do
     it "destroys the requested admin_reporting" do
+      pending "Implementation"
       provider_domain = Admin::Reporting::ProviderDomain.create! valid_attributes
       expect {
         delete :destroy, {:id => provider_domain.to_param}, valid_session
@@ -155,6 +170,7 @@ describe Admin::Reporting::ProviderDomainsController do
     end
 
     it "redirects to the admin_reporting_provider_domains list" do
+      pending "Implementation"
       provider_domain = Admin::Reporting::ProviderDomain.create! valid_attributes
       delete :destroy, {:id => provider_domain.to_param}, valid_session
       response.should redirect_to(admin_reporting_provider_domains_url)

@@ -4,10 +4,17 @@ module ListCutter
     validates_presence_of :zone_code, :message => 'Please specify a zone code'
 
     def to_sql
-      sanitize_sql <<-SQL, @movement.id, Country.countries_in_zone(zone_code)
-        SELECT id AS user_id FROM users
-        WHERE movement_id = ? AND country_iso IN (?)
-      SQL
+      unless zone_code == 5 #no mans land zone
+        sanitize_sql <<-SQL, @movement.id, Country.countries_in_zone(zone_code)
+          SELECT id AS user_id FROM users
+          WHERE movement_id = ? AND country_iso IN (?)
+        SQL
+      else
+        sanitize_sql <<-SQL, @movement.id, Country.countries_in_zone(zone_code)
+          SELECT id AS user_id FROM users
+          WHERE movement_id = ? AND country_iso = (?)
+        SQL
+      end
     end
 
     def active?

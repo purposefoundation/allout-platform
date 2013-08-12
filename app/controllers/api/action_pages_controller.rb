@@ -1,6 +1,8 @@
 class Api::ActionPagesController < Api::BaseController
   include CountryHelper
   include Errors
+
+  caches_action :show, :expires_in => 24.hours, :race_condition_ttl => 30.seconds, :cache_path => Proc.new {|c| "#{I18n.locale}/#{params[:id]}/#{params[:email]}/#{params[:member_has_joined]}/#{c.request.path}" }
   
   def show
     page = movement.find_published_page(params[:id])
@@ -109,7 +111,10 @@ class Api::ActionPagesController < Api::BaseController
   end
 
   def merge_join_and_member_count_attrs(page_as_json, page)
-    page_as_json.merge(is_join_page: page.is_join?, member_count: MemberCountCalculator.current_member_count(movement, I18n.locale))
+    if page.is_join?
+      page_as_json.merge(is_join_page: page.is_join?, member_count: MemberCountCalculator.current_member_count(movement, I18n.locale))
+    end
+    page_as_json
   end
 
   def map_user_attribute_keys_to_page_required_user_details_keys(user_attributes)

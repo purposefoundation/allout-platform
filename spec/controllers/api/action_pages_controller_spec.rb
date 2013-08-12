@@ -699,7 +699,7 @@ describe Api::ActionPagesController do
       data["header_content_modules"].first["title"].should eql "Header"
       data["header_content_modules"].first["content"].should eql "Welcome!"
       data["is_join_page"].should be_false
-      data["member_count"].should eql "10,000"
+      #data["member_count"].should eql "10,000" This is only true if its a join page.
       response.headers['Content-Language'].should eql disabled_language.iso_code
     end
 
