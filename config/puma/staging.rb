@@ -21,4 +21,4 @@ state_path "tmp/pids/puma-#{railsenv}.state"
 stdout_redirect
 "#{application_path}/log/puma-#{railsenv}.stdout.log"
 "#{application_path}/log/puma-#{railsenv}.stderr.log"
-bind "unix://tmp/sockets/#{railsenv}.socket"
+bind "unix:///tmp/sockets/allout-platform.socket"
