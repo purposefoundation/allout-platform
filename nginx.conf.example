@@ -18,7 +18,7 @@ http {
   server_names_hash_bucket_size 128;
 
   upstream allout {
-    server unix:/var/www/allout-platform/tmp/sockets/staging.socket;
+    server unix:///var/www/allout-platform/tmp/sockets/staging.socket;
   }
 
   server {

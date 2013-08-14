@@ -16,9 +16,9 @@ activate_control_app
 directory application_path
 environment railsenv
 daemonize false
-pidfile "#{application_path}/tmp/pids/puma-#{railsenv}.pid"
-state_path "#{application_path}/tmp/pids/puma-#{railsenv}.state"
+pidfile "tmp/pids/puma-#{railsenv}.pid"
+state_path "tmp/pids/puma-#{railsenv}.state"
 stdout_redirect
 "#{application_path}/log/puma-#{railsenv}.stdout.log"
 "#{application_path}/log/puma-#{railsenv}.stderr.log"
-bind "unix://#{application_path}/tmp/sockets/#{railsenv}.socket"
+bind "unix://tmp/sockets/#{railsenv}.socket"

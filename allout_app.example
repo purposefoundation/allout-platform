@@ -1,5 +1,5 @@
 upstream allout-platform {
-  server unix:/var/www/allout-platform/tmp/sockets/staging.socket;
+  server unix:///var/www/allout-platform/tmp/sockets/staging.socket;
 }
 
 server {
