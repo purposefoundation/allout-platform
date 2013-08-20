@@ -79,7 +79,8 @@ group :development do
 end
 
 group :production, :staging do
-  #gem 'dalli'
+  gem 'dalli'
+  gem 'kgio'
   gem 'redis-rails'
 end
 
