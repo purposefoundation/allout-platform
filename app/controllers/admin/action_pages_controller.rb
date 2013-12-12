@@ -76,7 +76,7 @@ module Admin
       return unless updated_attrs
       all_modules = @header_content_modules + @main_content_modules + @sidebar_content_modules + @footer_content_modules
       updated_attrs.each do |id, attrs|
-        content_module = all_modules.find { |cm| cm.id == id.to_i }
+        content_module = all_modules.find { |cm| cm.try(:id) == id.to_i }
         content_module.update_attributes(attrs)
         if content_module.valid_with_warnings?
           update_results.report_success_for content_module.language.name
