@@ -59,6 +59,7 @@ gem 'recurly'
 gem 'font-awesome-rails'
 gem 'resque'
 gem 'resque-retry'
+gem 'byebug'
 
 group :assets do
   gem 'uglifier', '>= 1.0.3'
