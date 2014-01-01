@@ -60,6 +60,7 @@ gem 'font-awesome-rails'
 gem 'resque'
 gem 'resque-retry'
 gem 'byebug'
+gem 'spreedly'
 
 group :assets do
   gem 'uglifier', '>= 1.0.3'
