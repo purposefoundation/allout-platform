@@ -59,6 +59,7 @@ gem 'recurly'
 gem 'font-awesome-rails'
 gem 'resque'
 gem 'resque-retry'
+gem 'resque-scheduler'
 gem 'byebug'
 gem 'spreedly'
 
