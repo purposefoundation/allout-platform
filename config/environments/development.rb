@@ -11,8 +11,9 @@ PurposePlatform::Application.configure do
 
                                                            # Show full error reports and disable caching
   config.consider_all_requests_local       = true
-  
+
   config.action_controller.perform_caching = true
+  config.force_ssl = ENV.fetch('FORCE_SSL'){false}
   #onfig.cache_store = :redis_store
 
   # Print deprecation notices to the Rails logger
@@ -38,7 +39,7 @@ PurposePlatform::Application.configure do
 
   Paperclip.options[:command_path] = "/usr/local/bin/"
 
-  
+
   #config.autoload_paths += %W(#{Rails.root}/app/jobs)
 
   config.action_mailer.raise_delivery_errors = true

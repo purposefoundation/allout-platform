@@ -33,33 +33,30 @@ PurposePlatform::Application.configure do
   # config.action_dispatch.x_sendfile_header = 'X-Accel-Redirect' # for nginx
 
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
-  config.force_ssl = true
+  config.force_ssl = ENV.fetch('FORCE_SSL'){true}
 
   # See everything in the log (default is :info)
   # config.log_level = :debug
 
   # config.logger = Logger.new(STDOUT)
   # config.logger.level = ENV['LOG_LEVEL'].blank? ? Logger::INFO : Logger.const_get(ENV['LOG_LEVEL'])
-  
-  config.log_level = ENV['LOG_LEVEL'].blank? ? :info : ENV['LOG_LEVEL'].to_sym
+
+  config.log_level = ENV.fetch('LOG_LEVEL'){:info}.to_sym
 
   # Prepend all log lines with the following tags
   # config.log_tags = [ :subdomain, :uuid ]
 
   # Use a different logger for distributed setups
   # config.logger = ActiveSupport::TaggedLogging.new(SyslogLogger.new)
-  
+
   # Use a different cache store in production
   # config.cache_store = :mem_cache_store
 
   # Use a different cache store in production
   #redis_url = ENV['REDIS_URL']
   #config.cache_store = :redis_store, "#{redis_url}" #, { expires_in: 90.minutes }
-  if ENV['MEMCACHE_SERVERS']
-    memcache_servers = ENV['MEMCACHE_SERVERS'].split(",")
-  else
-    memcache_servers = "127.0.0.1:11211"
-  end
+
+  memcache_servers = ENV.fetch('MEMCACHE_SERVERS'){"127.0.0.1:11211"}.split(",")
   config.cache_store = :dalli_store, memcache_servers, { :namespace => "allout_platform_production", :expires_in => 10.days, :compress => true, :username => ENV['MEMCACHE_USERNAME'], :password => ENV['MEMCACHE_PASSWORD'] }
 
   # Enable serving of images, stylesheets, and JavaScripts from an asset server
@@ -85,7 +82,7 @@ PurposePlatform::Application.configure do
 
   # Log the query plan for queries taking more than this (works
   # with SQLite, MySQL, and PostgreSQL)
-  # config.active_record.auto_explain_threshold_in_seconds = 0.5  
+  # config.active_record.auto_explain_threshold_in_seconds = 0.5
 
   config.action_mailer.default_url_options = { :host => "#{Rails.env}.platform.allout.org" }
   #config.action_controller.default_url_options = { :host => 'platform.allout.org' }
