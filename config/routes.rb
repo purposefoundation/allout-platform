@@ -1,12 +1,8 @@
 require 'resque/server'
 
 PurposePlatform::Application.routes.draw do
-
-
   devise_for :users
   devise_for :platform_users
-
-
 
   resque_constraint = lambda do |request|
     request.env['warden'].authenticate!({ :scope => :platform_user })
@@ -23,13 +19,13 @@ PurposePlatform::Application.routes.draw do
       get 'quick_go' => "quick_go#index"
       resources :images
       resources :downloadable_assets
+
       resource :homepages do
         put :create_preview
         get :preview
       end
+
       resources :campaigns do
-        get 'donations' => "donations#search_results"
-        get 'donations/:id' => "donations#deactivate", :as => :deactivate_donation
         member do
           get :ask_stats_report
           get :pushes_for_combo
@@ -73,8 +69,8 @@ PurposePlatform::Application.routes.draw do
       end
 
       resources :featured_content_collections, :except => [:destroy, :create, :new]
-
       resources :featured_content_modules do
+
         member do
           put :sort
         end
@@ -120,6 +116,10 @@ PurposePlatform::Application.routes.draw do
       post "list_cutter/count" => "list_cutter#count"
       post "list_cutter/save" => "list_cutter#save"
       put "list_cutter/update" => "list_cutter#update"
+
+      resources :donations do
+        get :deactivate, :on => :member
+      end
     end
   end
 
