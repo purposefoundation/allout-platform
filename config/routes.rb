@@ -102,6 +102,7 @@ PurposePlatform::Application.routes.draw do
 
       namespace :reporting do
         resources :deliverabilities
+        resources :donations, :except => [:edit]
       end
 
       resources :join_emails, :only => [:index]
