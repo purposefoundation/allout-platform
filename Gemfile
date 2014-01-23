@@ -55,7 +55,6 @@ gem 'purpose_country_select', '~> 0.0.5', :git => "https://github.com/PurposeOpe
 gem 'clockwork'
 gem 'foreigner'
 gem 'roo'
-gem 'recurly'
 gem 'font-awesome-rails'
 gem 'resque'
 gem 'resque-retry'

@@ -317,7 +317,6 @@ GEM
     rb-readline (0.5.1)
     rdoc (3.12.2)
       json (~> 1.4)
-    recurly (2.1.9)
     redcarpet (3.0.0)
     redis (3.0.4)
     redis-actionpack (3.2.4)
@@ -542,7 +541,6 @@ DEPENDENCIES
   rails (~> 3.2.14)
   rails_best_practices
   rb-readline
-  recurly
   redcarpet
   redis-rails
   resque
