@@ -158,6 +158,13 @@ class Donation < ActiveRecord::Base
     end
   end
 
+  def self.enqueue_recurring_payments_from_recurly
+    recurly_donations = Donation.where('active = ? AND frequency != ? AND last_donated_at IS NOT NULL AND payment_method_token IS NOT NULL', true, 'one_off')
+    recurly_donations.each do |donation|
+      donation.enqueue_recurring_payment_from donation.last_donated_at
+    end
+  end
+
   # called for recurring donations
   def add_payment(amount_in_cents, external_id, order_id)
     self.amount_in_cents += amount_in_cents
