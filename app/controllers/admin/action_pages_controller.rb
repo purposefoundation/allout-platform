@@ -24,7 +24,7 @@ module Admin
       update_results = UpdateResults.new
       update_content_modules(params[:content_modules], update_results)
       update_autofire_emails(params[:autofire_emails], update_results)
-      ActionPageObserver.update(@action_page)
+      # ActionPageObserver.update(@action_page)
       if update_results.has_reports?
         flash.now[:notice] = update_results.success_message if update_results.has_success?
         flash.now[:info]   = update_results.failure_message if update_results.has_failures?
