@@ -5,10 +5,10 @@ class Mail::Message
   end
 end
 
-ActionMailer::Base.smtp_settings = {  
+ActionMailer::Base.smtp_settings = {
   :address        => "smtp.sendgrid.com",
-  :domain         => "platform.yourname.com",
-  :port           => 25,
+  :domain         => "allout.org",
+  :port           => ENV.fetch('SENDGRID_PORT'){25},
   :user_name      => ENV["SENDGRID_USERNAME"],
   :password       => ENV["SENDGRID_PASSWORD"],
   :authentication => :plain,
