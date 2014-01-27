@@ -1,4 +1,4 @@
-source 'http://rubygems.org'
+source 'https://rubygems.org'
 ruby '2.0.0'
 
 gem 'rails', '~>3.2.13'
@@ -10,6 +10,7 @@ gem 'uuid'
 
 gem 'json', '~> 1.7.7'
 
+gem 'rb-readline'
 gem 'rubyzip',  "~> 0.9.9"
 gem 'yui-compressor', :git => "git://github.com/oleander/ruby-yui-compressor.git", :require  => "yui/compressor"
 gem 'will_paginate' #, '~>3.0.3'

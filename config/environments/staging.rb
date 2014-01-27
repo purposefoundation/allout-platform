@@ -31,12 +31,12 @@ PurposePlatform::Application.configure do
   # config.action_dispatch.x_sendfile_header = 'X-Accel-Redirect' # for nginx
 
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
-  config.force_ssl = true
+  config.force_ssl = ActiveRecord::ConnectionAdapters::Column.value_to_boolean ENV.fetch("FORCE_SSL"){true}
 
   # See everything in the log (default is :info)
   # config.log_level = :debug
   #config.logger = Logger.new(STDOUT)
-  
+
   config.log_level = ENV['LOG_LEVEL'].blank? ? :info : ENV['LOG_LEVEL'].to_sym
 
   # Prepend all log lines with the following tags
@@ -49,11 +49,7 @@ PurposePlatform::Application.configure do
   # config.cache_store = :mem_cache_store
   #redis_url = ENV['REDIS_URL']
   #config.cache_store = :redis_store, "#{redis_url}" #, { expires_in: 90.minutes }
-  if ENV['MEMCACHE_SERVERS']
-    memcache_servers = ENV['MEMCACHE_SERVERS'].split(",")
-  else
-    memcache_servers = "127.0.0.1:11211"
-  end
+  memcache_servers = ENV.fetch('MEMCACHE_SERVERS'){"127.0.0.1:11211"}.split(",")
   config.cache_store = :dalli_store, memcache_servers, { :namespace => "allout_platform_staging", :expires_in => 10.days, :compress => true, :username => ENV['MEMCACHE_USERNAME'], :password => ENV['MEMCACHE_PASSWORD'] }
   # Enable serving of images, stylesheets, and JavaScripts from an asset server
   # config.action_controller.asset_host = "http://assets.example.com"
@@ -71,7 +67,7 @@ PurposePlatform::Application.configure do
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
   # the I18n.default_locale when a translation can not be found)
   config.i18n.fallbacks = true
-  
+
   config.threadsafe! unless defined?($rails_rake_task) && $rails_rake_task
 
   # Send deprecation notices to registered listeners
