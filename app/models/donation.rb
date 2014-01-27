@@ -147,7 +147,7 @@ class Donation < ActiveRecord::Base
 
       self.update_attribute('next_payment_at', next_payment)
       Resque.enqueue_at(next_payment, self.class, self.id)
-      PaymentMailer.expiring_credit_card(self).deliver if card_expiration_date < next_payment.beginning_of_month
+      PaymentMailer.expiring_credit_card(self).deliver if card_expiration_date.end_of_month < next_payment
     end
   end
 

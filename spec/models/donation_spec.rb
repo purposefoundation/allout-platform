@@ -479,15 +479,16 @@ describe Donation do
       end
 
       it "should not call the expiring card email when the card will be valid for the next payment" do
-        card_expiring_this_month = { :month => DateTime.now.month, :year => DateTime.now.year }
+        datetime = DateTime.new(2014,1,1)
+        card_expiring_next_month = { :month => DateTime.new(2014,2,28).end_of_day.month, :year => DateTime.new(2014,2,28).end_of_day.year }
+
         donation.update_attributes(
           :active => true,
           :frequency => 'weekly',
-          :card_exp_month => card_expiring_this_month[:month],
-          :card_exp_year => card_expiring_this_month[:year]
+          :card_exp_month => card_expiring_next_month[:month],
+          :card_exp_year => card_expiring_next_month[:year]
         )
 
-        datetime = DateTime.now
         DateTime.stub(:now) { datetime }
         Resque.stub(:enqueue_at) { nil }
         mailer = mock
