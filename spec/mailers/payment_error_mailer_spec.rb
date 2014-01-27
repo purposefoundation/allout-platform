@@ -151,4 +151,70 @@ describe PaymentErrorMailer do
     end
 
   end
+
+  describe "report_recurring_donation_error" do
+    let(:donation) { FactoryGirl.create(:recurring_donation) }
+    let(:member) { donation.user }
+    let(:movement) { donation.user.movement }
+    let(:transaction) { failed_purchase_and_hash_response }
+
+    before :each do
+      member.update_attributes( :first_name => 'Jane',
+                                       :last_name => 'Doe' )
+      ENV["#{movement.slug.upcase}_PAYPALERROR_EMAIL_RECIPIENTS"] = 'test@example.com'
+      PaymentErrorMailer.report_recurring_donation_error(donation, transaction[:errors]).deliver
+    end
+
+    let(:delivered) { ActionMailer::Base.deliveries.last }
+
+    it "should deliver email with the correct body" do
+      delivered.should have_body_text("Message: #{transaction[:errors][:message]}")
+      delivered.should have_body_text("Name: Jane Doe")
+      delivered.should have_body_text("Email: #{member.email}")
+      delivered.should have_body_text("Country: #{member.country_iso}")
+      delivered.should have_body_text("Donation ID: #{donation.id}")
+      delivered.should have_body_text("Payment method: #{donation.payment_method}")
+      delivered.should have_body_text("Recurring donation amount in cents: #{donation.subscription_amount}")
+      delivered.should have_body_text("Currency: #{donation.currency}")
+    end
+  end
+
+  describe "recurring_donation_card_declined" do
+    let(:donation) { FactoryGirl.create(:recurring_donation) }
+    let(:member) { donation.user }
+    let(:movement) { donation.user.movement }
+
+    before :each do
+      ENV["#{movement.slug}_CONTACT_EMAIL".upcase] = "noreply@#{movement.slug}.org"
+      member.update_attribute('country_iso', :us)
+      PaymentErrorMailer.recurring_donation_card_declined(donation).deliver
+    end
+
+    let(:delivered) { ActionMailer::Base.deliveries.last }
+
+    it "should deliver a single email" do
+      ActionMailer::Base.deliveries.size.should == 1
+    end
+
+    it "should deliver a single email with the correct to, from, and subject fields" do
+      delivered.to.length.should == 1
+      delivered.to.first.should == donation.user.email
+      delivered.from.length.should == 1
+      delivered.from.first.should == "noreply@#{movement.slug}.org"
+      delivered.subject.should == "We were unable to process your last gift to #{movement.name}"
+    end
+
+    it "should deliver email with the correct body" do
+      delivered.should have_body_text("your credit card was declined")
+      delivered.should have_body_text("http://www.yourdomain.com/en/actions/#{donation.action_page.slug}")
+      delivered.should have_body_text(/#{member.first_name}/) if member.first_name.present?
+      delivered.should have_body_text(/#{member.last_name}/) if member.last_name.present?
+      delivered.should have_body_text(/#{member.postcode}/) if member.postcode.present?
+      delivered.should have_body_text(/UNITED STATES/)
+      delivered.should have_body_text(/#{member.email}/)
+      delivered.should have_body_text("$20.00 #{donation.frequency}")
+      delivered.should have_body_text("#{donation.created_at.strftime("%F")}")
+      delivered.should have_body_text("#{donation.payment_method_token}")
+    end
+  end
 end

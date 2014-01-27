@@ -131,11 +131,6 @@ describe Donation do
       validated_donation(:amount_in_cents => 100, :active => true).should be_valid
     end
 
-    it "must have subscription_id if recurring" do
-      validated_donation(:frequency => :monthly, :subscription_id => '123456').should be_valid
-      validated_donation(:frequency => :monthly, :subscription_id => nil).should_not be_valid
-    end
-
     it "must have transaction_id if one off" do
       validated_donation(:frequency => :one_off, :transaction_id => '123456').should be_valid
       validated_donation(:frequency => :one_off, :transaction_id => nil).should_not be_valid
@@ -249,43 +244,33 @@ describe Donation do
     }
   end
 
-  describe "confirm" do
-    it "should mark as active" do
-      donation = FactoryGirl.create(:donation, :active => false, :order_id => '1123789', :transaction_id => "23423434")
-
-      donation.active.should be_false
-
-      donation.confirm
-
-      donation.active.should be_true
-    end
-  end
-
   describe "add_payment" do
-
-    it "should create transaction" do
-
-      donation = FactoryGirl.create(:donation, :active => false, :frequency => :monthly, :amount_in_cents => 10, :currency => 'usd', :subscription_id => '12345', :order_id => '1123789', :transaction_id => "23423434")
-
+    it "should create transaction for a recurring donation" do
+      recurring_donation = FactoryGirl.create(:recurring_donation)
       transaction = mock()
-      Transaction.should_receive(:new).with(:donation => donation,
-          :external_id => donation.transaction_id,
-          :invoice_id => donation.order_id,
-          :amount_in_cents => 100,
-          :currency => donation.currency,
+      Transaction.should_receive(:new).with(:donation => recurring_donation,
+          :external_id => recurring_donation.transaction_id,
+          :invoice_id => recurring_donation.order_id,
+          :amount_in_cents => recurring_donation.amount_in_cents,
+          :currency => recurring_donation.currency,
           :successful => true).and_return(transaction)
 
       transaction.should_receive(:save!)
 
-      transaction_id = "23423434"
-      invoice_id = "1123789"
-      donation.add_payment(100, transaction_id, invoice_id)
+      transaction_id = recurring_donation.transaction_id
+      invoice_id = nil
+      recurring_donation.add_payment(recurring_donation.amount_in_cents, transaction_id, invoice_id)
+    end
 
+    it "should update the last_donated_at attribute on the donation" do
+      recurring_donation = FactoryGirl.create(:recurring_donation)
+      transaction = recurring_donation.add_payment(recurring_donation.subscription_amount, recurring_donation.transaction_id, nil)
+      recurring_donation.last_donated_at.to_i.should == transaction.created_at.to_i
     end
 
     it "should add payment amount to donation when amount is zero" do
-      donation = FactoryGirl.create(:donation, :active => false, :frequency => :monthly, :amount_in_cents => 0, :currency => 'usd', :subscription_id => '12345', :order_id => '1123789', :transaction_id => "23423434")
-
+      donation = FactoryGirl.create(:donation)
+      donation.update_attribute('amount_in_cents', 0)
       donation.amount_in_cents.should == 0
 
       transaction_id = "23423434"
@@ -297,22 +282,20 @@ describe Donation do
     end
 
     it "should add payment amount to donation when amount is greater than zero" do
-      donation = FactoryGirl.create(:donation, :active => false, :frequency => :monthly, :amount_in_cents => 100, :currency => 'usd', :subscription_id => '12345', :order_id => '1123789', :transaction_id => "23423434")
-
-      donation.amount_in_cents.should == 100
-      donation.amount_in_dollar_cents.should == 100
+      donation = FactoryGirl.create(:donation)
+      donation.amount_in_cents.should == 1000
+      donation.amount_in_dollar_cents.should == 1000
 
       transaction_id = "23423434"
       invoice_id = "1123789"
       donation.add_payment(800, transaction_id, invoice_id)
 
-      donation.amount_in_cents.should == 900
-      donation.amount_in_dollar_cents.should == 900
+      donation.amount_in_cents.should == 1800
+      donation.amount_in_dollar_cents.should == 1800
     end
 
     it "should activate donation on initial payment" do
-      donation = FactoryGirl.create(:donation, :active => false, :frequency => :monthly, :amount_in_cents => 0, :currency => 'usd', :subscription_id => '12345', :order_id => '1123789', :transaction_id => "23423434")
-
+      donation = FactoryGirl.create(:donation, :active => false)
       donation.active.should be_false
 
       transaction_id = "23423434"
@@ -320,6 +303,316 @@ describe Donation do
       donation.add_payment(100, transaction_id, invoice_id)
 
       donation.active.should be_true
+    end
+  end
+
+  describe "a donation created via take action" do
+    let(:user) { FactoryGirl.create(:english_user, :email => 'noone@example.com') }
+    let(:ask) { FactoryGirl.create(:donation_module) }
+    let(:page) { FactoryGirl.create(:action_page) }
+    let(:email) { FactoryGirl.create(:email) }
+    let(:action_info) { valid_donation_action_info }
+    let(:successful_purchase) { successful_purchase_and_hash_response }
+    let(:failed_purchase) { failed_purchase_and_hash_response }
+
+    before :each do
+      mailer = mock
+      PaymentMailer.stub(:confirm_purchase) { mailer }
+      mailer.stub(:deliver)
+    end
+
+    describe "confirm" do
+      let(:donation) { FactoryGirl.create(:donation, :active => false) }
+      let(:recurring_donation) { FactoryGirl.create(:recurring_donation, :active => false) }
+
+      before :each do
+        donation.active.should be_false
+      end
+
+      it "should mark as active" do
+        donation.confirm
+        donation.active.should be_true
+      end
+
+      it "should send purchase confirmation email" do
+        PaymentMailer.should_receive(:confirm_purchase)
+        donation.confirm
+        donation.transactions.count.should == 1
+      end
+
+      it "should enqueue a payment for a recurring donation" do
+        recurring_donation.should_receive(:enqueue_recurring_payment_from)
+        recurring_donation.confirm
+      end
+
+      it "should not enqueue a payment one_off donation" do
+        donation.should_not_receive(:enqueue_recurring_payment_from)
+        donation.confirm
+      end
+    end
+
+    # a donation created via take_action
+    describe "#make_payment_on_recurring_donation" do
+      let(:stubbed_client) { SpreedlyClient.stub(:new) { nil } }
+
+      before :each do
+        Resque.stub(:enqueue_at)
+      end
+
+      let(:donation) { ask.take_action(user, action_info, page) }
+
+      it "should not call SpreedlyClient.purchase_and_hash_response if the frequency is :one_off" do
+        donation.update_attribute('frequency', :one_off)
+        donation.make_payment_on_recurring_donation
+        SpreedlyClient.should_not_receive(:purchase_and_hash_response)
+      end
+
+      it "should not call SpreedlyClient.purchase_and_hash_response if the donation is inactive" do
+        donation.update_attribute(:active, false)
+        SpreedlyClient.should_not_receive(:purchase_and_hash_response)
+        donation.make_payment_on_recurring_donation
+      end
+
+      it "should not call SpreedlyClient.purchase_and_hash_response if the donation does not have a classification" do
+        donation.update_attribute(:classification, nil)
+        SpreedlyClient.should_not_receive(:purchase_and_hash_response)
+        donation.make_payment_on_recurring_donation
+      end
+
+      it "should call #handle_successful_spreedly_purchase_on_recurring_donation after a successful purchase" do
+        stubbed_client.stub(:create_payment_method_and_purchase) { successful_purchase }
+        SpreedlyClient.stub(:new) { stubbed_client }
+        donation.should_receive(:handle_successful_spreedly_purchase_on_recurring_donation).with(successful_purchase)
+        donation.make_payment_on_recurring_donation
+      end
+
+      it "should call #handle_failed_recurring_payment for an unsuccessful payment" do
+        stubbed_client.stub(:create_payment_method_and_purchase) { failed_purchase }
+        SpreedlyClient.stub(:new) { stubbed_client }
+        donation.should_receive(:handle_failed_recurring_payment)
+        donation.make_payment_on_recurring_donation
+      end
+    end
+
+    # a donation created via take_action
+    describe "#handle_successful_spreedly_purchase_on_recurring_donation" do
+      let(:mailer) { mock }
+      let(:spreedly_client_purchase) { successful_purchase }
+
+      before :each do
+        Resque.stub(:enqueue_at) { nil }
+        mailer.stub(:deliver)
+      end
+
+      let(:donation) { ask.take_action(user, action_info, page) }
+
+      it "should call #add_payment" do
+        donation.stub(:enqueue_recurring_payment_from)
+        PaymentMailer.stub(:confirm_recurring_purchase) { mailer }
+        donation.should_receive(:add_payment)
+        donation.handle_successful_spreedly_purchase_on_recurring_donation(spreedly_client_purchase)
+      end
+
+      it "should call #enqueue_recurring_payment_from" do
+        PaymentMailer.stub(:confirm_recurring_purchase) { mailer }
+        datetime = DateTime.now
+        DateTime.stub(:now) { datetime }
+
+        donation.should_receive(:enqueue_recurring_payment_from).with(datetime)
+        donation.handle_successful_spreedly_purchase_on_recurring_donation(spreedly_client_purchase)
+      end
+
+      it "should send payment confirmation email" do
+        transaction = donation.add_payment(donation.amount_in_cents, donation.transaction_id, nil)
+        donation.stub(:enqueue_recurring_payment_from)
+        donation.stub(:add_payment) { transaction }
+        PaymentMailer.should_receive(:confirm_recurring_purchase).with(donation, transaction).and_return(mailer)
+        donation.handle_successful_spreedly_purchase_on_recurring_donation(spreedly_client_purchase)
+      end
+
+      it "should create transactions with the subscription amount and increment the donation amount" do
+        donation.stub(:enqueue_recurring_payment_from)
+        PaymentMailer.stub(:confirm_recurring_purchase) { mailer }
+        donation.transactions.count.should == 1
+
+        2.times { donation.handle_successful_spreedly_purchase_on_recurring_donation(spreedly_client_purchase) }
+
+        donation.transactions.count.should == 3
+        donation.subscription_amount.should == 100
+        donation.amount_in_cents.should == 300
+
+        donation.transactions.each { |t| t.amount_in_cents.should == 100 }
+      end
+    end
+
+    # a donation created via take action
+    describe "enqueue_recurring_payment_from" do
+      before :each do
+        Donation.any_instance.stub(:confirm)
+      end
+
+      let(:donation) { ask.take_action(user, action_info, page) }
+
+      it "calls Resque.enqueue and sets the next_payment_at attribute when a monthly recurring donation is active" do
+        donation.update_attribute('active', true)
+        donation.next_payment_at.should == nil
+        Resque.should_receive(:enqueue_at)
+        datetime = DateTime.now
+        DateTime.stub(:now) { datetime }
+
+        donation.enqueue_recurring_payment_from datetime
+        donation.next_payment_at.should == datetime + 1.month
+      end
+
+      it "does not call Resque.enqueue when a recurring donation is inactive" do
+        donation.update_attribute('active', false)
+        Resque.should_not_receive(:enqueue_at)
+        donation.enqueue_recurring_payment_from DateTime.now
+        donation.next_payment_at.should == nil
+      end
+
+      it "does not call Resque.enqueue for a one_off donation" do
+        donation.update_attributes(:active => true, :frequency => :one_off)
+        Resque.should_not_receive(:enqueue_at)
+        donation.enqueue_recurring_payment_from DateTime.now
+        donation.next_payment_at.should == nil
+      end
+
+      it "should not call the expiring card email when the card will be valid for the next payment" do
+        card_expiring_this_month = { :month => DateTime.now.month, :year => DateTime.now.year }
+        donation.update_attributes(
+          :active => true,
+          :frequency => 'weekly',
+          :card_exp_month => card_expiring_this_month[:month],
+          :card_exp_year => card_expiring_this_month[:year]
+        )
+
+        datetime = DateTime.now
+        DateTime.stub(:now) { datetime }
+        Resque.stub(:enqueue_at) { nil }
+        mailer = mock
+        mailer.stub(:deliver)
+
+        PaymentMailer.should_not_receive(:expiring_credit_card).with(donation).and_return(mailer)
+        donation.enqueue_recurring_payment_from datetime
+        donation.next_payment_at.should == datetime + 1.week
+      end
+
+      it "should call the expiring card email when the card expires before the next weekly payment" do
+        card_expiring_this_month = { :month => DateTime.now.month, :year => DateTime.now.year }
+        donation.update_attributes(
+          :active => true,
+          :frequency => 'weekly',
+          :card_exp_month => card_expiring_this_month[:month],
+          :card_exp_year => card_expiring_this_month[:year]
+        )
+
+        datetime = DateTime.now.end_of_month - 6.days
+        DateTime.stub(:now) { datetime }
+        Resque.stub(:enqueue_at) { nil }
+        mailer = mock
+        mailer.stub(:deliver)
+
+        PaymentMailer.should_receive(:expiring_credit_card).with(donation).and_return(mailer)
+        donation.enqueue_recurring_payment_from datetime
+        donation.next_payment_at.should == datetime + 1.week
+      end
+    end
+
+    describe ".enqueue_recurring_payments_from_recurly" do
+      let(:valid_recurly_donations) do
+        [ FactoryGirl.create(:recurring_donation, :frequency => :monthly, :transaction_id => 'tran1', :subscription_id => 'recurly1', :last_donated_at => DateTime.now - 1.day),
+          FactoryGirl.create(:recurring_donation, :frequency => :weekly, :transaction_id => 'tran2', :subscription_id => 'recurly2', :last_donated_at => DateTime.now, :next_payment_at => DateTime.now + 1.week),
+          FactoryGirl.create(:recurring_donation, :frequency => :annual, :transaction_id => 'tran3', :subscription_id => 'recurly3', :last_donated_at => DateTime.now - 1.week) ]
+      end
+
+      let(:invalid_recurly_donations) do
+        [ FactoryGirl.create(:recurring_donation, :transaction_id => 'tran4', :subscription_id => 'recurly4', :last_donated_at => nil),
+          FactoryGirl.create(:recurring_donation, :transaction_id => 'tran5', :subscription_id => 'recurly5', :active => false),
+          FactoryGirl.create(:recurring_donation, :transaction_id => 'tran6', :subscription_id => 'recurly6', :payment_method_token => nil),
+          FactoryGirl.create(:recurring_donation, :transaction_id => 'tran7', :subscription_id => 'recurly7', :frequency => 'one_off') ]
+      end
+
+      let!(:donations) { valid_recurly_donations + invalid_recurly_donations }
+
+      it "should call Resque.enqueue on active recurring donations" do
+        Resque.should_receive(:enqueue_at).exactly(3).times
+        Donation.enqueue_recurring_payments_from_recurly
+
+        valid_recurly_donations.each do |donation|
+          donation.reload
+          donation.next_payment_at.should_not == nil
+        end
+
+        invalid_recurly_donations.each do |donation|
+          donation.reload
+          donation.next_payment_at.should == nil
+        end
+      end
+    end
+
+    # a donation created via take action
+    describe "#deactivate" do
+      let(:donation) { ask.take_action(user, action_info, page) }
+
+      before :each do
+        Resque.stub(:enqueue_at)
+      end
+
+      it "sets the active attribute to false for a donation" do
+        donation.active.should == true
+        donation.deactivate
+        donation.active.should == false
+      end
+    end
+
+    # a donation created via take action
+    describe "#handle_failed_recurring_payment" do
+      let(:donation) { ask.take_action(user, action_info, page) }
+      let(:mailer) { mock }
+      let(:transaction) { failed_purchase }
+
+      before :each do
+        Resque.stub(:enqueue_at)
+        PaymentErrorMailer.stub(:delay) { mailer }
+      end
+
+      it "should call deactivate on the donation" do
+        mailer.stub(:recurring_donation_card_declined)
+        mailer.stub(:report_recurring_donation_error)
+        donation.should_receive(:deactivate)
+        donation.handle_failed_recurring_payment(transaction)
+      end
+
+      it "should call PaymentErrorMailer.delay.recurring_donation_card_declined" do
+        mailer.stub(:report_recurring_donation_error)
+        PaymentErrorMailer.delay.should_receive(:recurring_donation_card_declined).with(donation)
+        donation.handle_failed_recurring_payment(failed_purchase)
+      end
+
+      it "should call PaymentErrorMailer.delay.report_recurring_donation_error" do
+        mailer.stub(:recurring_donation_card_declined)
+        PaymentErrorMailer.delay.should_receive(:report_recurring_donation_error).with(donation, transaction[:errors])
+        donation.handle_failed_recurring_payment(failed_purchase)
+      end
+    end
+  end
+
+  describe '#update_credit_card_via_spreedly' do
+    let(:donation) do
+      FactoryGirl.create(:recurring_donation,
+                         :card_exp_month => nil,
+                         :card_exp_year => nil)
+    end
+
+    it "should update donation credit card information with payment method retrieved from Spreedly" do
+      spreedly_client = mock
+      spreedly_client.stub(:retrieve_and_hash_payment_method) { found_payment_method }
+      SpreedlyClient.stub(:new) { spreedly_client }
+      donation.update_credit_card_via_spreedly
+
+      donation.card_exp_month.should == '5'
+      donation.card_exp_year.should == '2017'
     end
   end
 end

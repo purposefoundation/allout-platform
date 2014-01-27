@@ -169,7 +169,7 @@ describe TafDonationModule do
     it "sets default frequency options with once as selected" do
       donation_module = TafDonationModule.new
       options = {'one_off' => 'default', 'weekly' => 'hidden', 'monthly' => 'optional', 'annual' => 'hidden'}
-      donation_module.frequency_options.should == options
+      donation_module.frequency_options['one_off'].should == 'default'
     end
 
     it "commence_donation_at is blank by default" do
@@ -251,7 +251,11 @@ describe TafDonationModule do
 
   describe "taking an action" do
     before(:each) do
-      @user = FactoryGirl.create(:user, :email => 'noone@example.com')
+      mailer = mock
+      mailer.stub(:deliver)
+      PaymentMailer.stub(:confirm_purchase) { mailer }
+
+      @user = FactoryGirl.create(:english_user)
       @ask = FactoryGirl.create(:taf_donation_module)
       @page = FactoryGirl.create(:action_page)
       @email = FactoryGirl.create(:email)
@@ -344,6 +348,7 @@ describe TafDonationModule do
     end
 
     it "should include the number of members who have donated to that action page" do
+      Donation.any_instance.stub(:confirm)
       page = FactoryGirl.create(:action_page)
       another_page_on_the_same_movement = FactoryGirl.create(:action_page, :action_sequence => page.action_sequence)
 
@@ -351,7 +356,7 @@ describe TafDonationModule do
       donation_module_on_same_page = FactoryGirl.create(:taf_donation_module, :pages => [page])
       donation_module_on_different_page = FactoryGirl.create(:taf_donation_module, :pages => [another_page_on_the_same_movement])
 
-      user = FactoryGirl.create(:user, :movement => page.movement)
+      user = FactoryGirl.create(:english_user, :movement => page.movement)
       action_info = {:payment_method => :paypal, :amount => 1000, :currency => :usd, :frequency => :one_off, :confirmed => true}
       donation_module.take_action(user, action_info.merge(:order_id => 'order1', :transaction_id => 'transaction1'), page)
       donation_module_on_same_page.take_action(user, action_info.merge(:order_id => 'order2', :transaction_id => 'transaction2'), page)

@@ -168,7 +168,7 @@ describe DonationModule do
 
     it "sets default frequency options with once as selected" do
       donation_module = DonationModule.new
-      options = {'one_off' => 'default', 'weekly' => 'hidden', 'monthly' => 'optional', 'annual' => 'hidden'}
+      options = {'one_off' => 'default', 'weekly' => 'optional', 'monthly' => 'optional', 'annual' => 'optional'}
       donation_module.frequency_options.should == options
     end
 
@@ -250,46 +250,106 @@ describe DonationModule do
   end
 
   describe "taking an action" do
+    let(:action_info) {{
+      :confirmed => true,
+      :currency => 'USD',
+      :amount => '100',
+      :payment_method => 'credit_card',
+      :email => @email,
+      :order_id => '111111',
+      :transaction_id => '222222',
+      :subscription_id => 'subscription_id'
+    }}
+
     before(:each) do
-      @user = FactoryGirl.create(:user, :email => 'noone@example.com')
+      # @user = FactoryGirl.create(:user, :email => 'noone@example.com')
+      @user = FactoryGirl.create(:english_user)
       @ask = FactoryGirl.create(:donation_module)
       @page = FactoryGirl.create(:action_page)
       @email = FactoryGirl.create(:email)
     end
 
-    it "should allow multiple donations from a single user" do
-      lambda { 3.times { @ask.take_action(@user, @page) } }.should_not raise_error(DuplicateActionTakenError)
+    # taking an action
+    describe "a one_off donation" do
+      before :each do
+        action_info[:frequency] = 'one_off'
+        mailer = mock
+        mailer.stub(:deliver)
+        PaymentMailer.stub(:confirm_purchase) { mailer }
+      end
+
+      it "should set a subscription_id when payment information is not in the action_info" do
+        donation = @ask.take_action(@user, action_info, @page)
+        donation.subscription_id.should == "subscription_id"
+      end
+
+      it "should allow multiple donations from a single user" do
+        lambda { 3.times { @ask.take_action(@user, @page) } }.should_not raise_error(DuplicateActionTakenError)
+      end
+
+      it "should create the donation with the correct values" do
+        donation = @ask.take_action(@user, action_info, @page)
+
+        donation.content_module.should == @ask
+        donation.action_page.should == @page
+        donation.user.should == @user
+        donation.frequency.should == :one_off
+        donation.currency.should == 'USD'
+        donation.amount_in_cents.should == 100
+        donation.payment_method.should == :credit_card
+        donation.email.should == @email
+        donation.order_id.should == '111111'
+        donation.subscription_id.should == 'subscription_id'
+        donation.transaction_id.should == '222222'
+        donation.payment_method_token.should == nil
+        donation.card_last_four_digits.should == nil
+        donation.card_exp_month.should == nil
+        donation.card_exp_year.should == nil
+        donation.last_donated_at.to_i.should == donation.transactions.last.created_at.to_i
+      end
+
+      it "should create the donation with credit card information when provided" do
+        action_info[:payment_method_token] = 'payment_method_token'
+        action_info[:card_last_four_digits] = '1111'
+        action_info[:card_exp_month] = '4'
+        action_info[:card_exp_year] = '2020'
+        donation = @ask.take_action(@user, action_info, @page)
+
+        donation.content_module.should == @ask
+        donation.action_page.should == @page
+        donation.user.should == @user
+        donation.frequency.should == :one_off
+        donation.currency.should == 'USD'
+        donation.amount_in_cents.should == 100
+        donation.payment_method.should == :credit_card
+        donation.email.should == @email
+        donation.order_id.should == '111111'
+        donation.transaction_id.should == '222222'
+        donation.last_donated_at.to_i.should == donation.transactions.last.created_at.to_i
+
+        donation.subscription_id.should == 'payment_method_token'
+        donation.payment_method_token.should == 'payment_method_token'
+        donation.card_last_four_digits.should == '1111'
+        donation.card_exp_month.should == '4'
+        donation.card_exp_year.should == '2020'
+      end
     end
 
-    it "should create the donation with the correct values" do
-      action_info = { :confirmed => true, :frequency => 'one_off', :currency => 'USD', :amount => '100', :payment_method => 'credit_card', :email => @email, :order_id => '111111', :transaction_id => '222222' }
-      donation = @ask.take_action(@user, action_info, @page)
+    describe "a recurring donation" do
+      before :each do
+        mailer = mock
+        mailer.stub(:deliver)
+        PaymentMailer.stub(:confirm_purchase) { mailer }
 
-      donation.content_module.should == @ask
-      donation.action_page.should == @page
-      donation.user.should == @user
-      donation.frequency.should == :one_off
-      donation.currency.should == 'USD'
-      donation.amount_in_cents.should == 100
-      donation.payment_method.should == :credit_card
-      donation.email.should == @email
-      donation.order_id.should == '111111'
-      donation.transaction_id.should == '222222'
-    end
+        action_info[:frequency] = 'monthly'
+      end
 
-    it "should create an incomplete recurring donation" do
-      action_info = { :payment_method => 'credit_card', :subscription_id => '222222', :frequency => 'monthly', :currency => 'USD', :confirmed => false }
-
-      donation = @ask.take_action(@user, action_info, @page)
-
-      donation.content_module.should == @ask
-      donation.action_page.should == @page
-      donation.user.should == @user
-      donation.payment_method.should == :credit_card
-      donation.subscription_id.should == '222222'
-      donation.frequency.should == :monthly
-      donation.currency.should == 'USD'
-      donation.active.should be_false
+      it "should create an active recurring donation when confirmed is true" do
+        Donation.any_instance.stub(:enqueue_recurring_payment_from)
+        action_info[:confirmed] = true
+        donation = @ask.take_action(@user, action_info, @page)
+        donation.active.should be_true
+      end
     end
   end
 
@@ -319,6 +379,10 @@ describe DonationModule do
 
   describe "as json" do
     before do
+      mailer = mock
+      mailer.stub(:deliver)
+      PaymentMailer.stub(:confirm_purchase) { mailer }
+
       DonationModule::AVAILABLE_CURRENCIES = {
         :brl => Money::Currency.new('BRL'),
         :eur => Money::Currency.new('EUR'),
@@ -351,7 +415,7 @@ describe DonationModule do
       donation_module_on_same_page = FactoryGirl.create(:donation_module, :pages => [page])
       donation_module_on_different_page = FactoryGirl.create(:donation_module, :pages => [another_page_on_the_same_movement])
 
-      user = FactoryGirl.create(:user, :movement => page.movement)
+      user = FactoryGirl.create(:english_user, :movement => page.movement)
       action_info = {:payment_method => :paypal, :amount => 1000, :currency => :usd, :frequency => :one_off, :confirmed => true}
       donation_module.take_action(user, action_info.merge(:order_id => 'order1', :transaction_id => 'transaction1'), page)
       donation_module_on_same_page.take_action(user, action_info.merge(:order_id => 'order2', :transaction_id => 'transaction2'), page)

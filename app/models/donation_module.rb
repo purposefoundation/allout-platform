@@ -98,17 +98,29 @@ class DonationModule < ContentModule
     donation = Donation.new(:content_module => self,
         :action_page => page,
         :user => user,
+        :classification => action_info[:classification],
         :currency => action_info[:currency],
         :amount_in_cents => action_info[:amount].to_i,
         :payment_method => action_info[:payment_method].to_sym,
         :email => action_info[:email],
         :order_id => action_info[:order_id],
         :transaction_id => action_info[:transaction_id],
-        :subscription_id => action_info[:subscription_id],
         :subscription_amount =>action_info[:subscription_amount].to_i,
         :active => action_info[:confirmed],
         :frequency => action_info[:frequency].to_sym)
+
+    if action_info[:payment_method_token]
+      donation.payment_method_token = action_info[:payment_method_token]
+      donation.card_last_four_digits = action_info[:card_last_four_digits]
+      donation.card_exp_month = action_info[:card_exp_month]
+      donation.card_exp_year = action_info[:card_exp_year]
+      donation.subscription_id = action_info[:payment_method_token]
+    else
+      donation.subscription_id = action_info[:subscription_id]
+    end
+
     donation.save!
+    donation.confirm unless action_info[:transaction_id].blank?
     donation
   end
 
@@ -224,7 +236,7 @@ class DonationModule < ContentModule
     self.default_amount = {} if self.default_amount.blank?
     self.recurring_suggested_amounts = {} if self.recurring_suggested_amounts.blank?
     self.recurring_default_amount = {} if self.recurring_default_amount.blank?
-    self.frequency_options = {'one_off' => 'default', 'weekly' => 'hidden', 'monthly' => 'optional', 'annual' => 'hidden'} unless self.frequency_options
+    self.frequency_options = {'one_off' => 'default', 'weekly' => 'optional', 'monthly' => 'optional', 'annual' => 'optional'} unless self.frequency_options
     self.receipt_frequency = :once unless self.receipt_frequency
     self.public_activity_stream_template = "{NAME|A member}, {COUNTRY|}<br/>[{HEADER}]" unless self.public_activity_stream_template
     self.active = 'true' unless self.active

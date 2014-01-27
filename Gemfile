@@ -60,6 +60,9 @@ gem 'roo'
 gem 'recurly'
 gem 'font-awesome-rails'
 gem 'resque'
+gem 'resque-scheduler'
+gem 'byebug'
+gem 'spreedly'
 
 
 group :assets do
