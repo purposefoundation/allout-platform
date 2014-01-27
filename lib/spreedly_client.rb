@@ -18,7 +18,7 @@ class SpreedlyClient
     spreedly_payment_method = @spreedly.find_payment_method(payment_method_token)
     payment_method = payment_method_to_hash(spreedly_payment_method)
     if payment_method[:data][:amount].blank? || payment_method[:data][:frequency].blank?
-      return { :code => 422, :errors => [{ :attribue => 'amount', :message => 'The donation amount or frequency is not valid.' }] }
+      return { :code => 422, :errors => [{ :attribute => 'amount', :message => 'The donation amount or frequency is not valid.' }] }
     end
     classify_payment_method(payment_method)
   rescue Spreedly::TimeoutError
@@ -29,10 +29,11 @@ class SpreedlyClient
 
   def purchase_and_hash_response(payment_method)
     gateway_token = get_gateway_token(payment_method[:data][:currency])
-    spreedly_transaction = @spreedly.purchase_on_gateway(gateway_token, payment_method[:token], payment_method[:data][:amount], 
-                                                         retain_on_success: true,
-                                                         merchant_name_descriptor: "All Out",
-                                                         merchant_location_descriptor: "http://allout.org"
+    spreedly_transaction = @spreedly.purchase_on_gateway(gateway_token, payment_method[:token], payment_method[:data][:amount],
+                                                         :currency_code => payment_method[:data][:currency].upcase,
+                                                         :retain_on_success => true,
+                                                         :merchant_name_descriptor => "All Out",
+                                                         :merchant_location_descriptor => "http://allout.org"
                                                         )
     transaction_to_hash(spreedly_transaction)
   rescue Spreedly::TimeoutError
@@ -48,7 +49,9 @@ class SpreedlyClient
       # AppConstants.spreedly_gateway_token_usd
       AppConstants.spreedly_gateway_token_test
     when 'cad'
-      AppConstants.spreedly_gateway_token_cad
+      # TODO: remove hard-coded test gateway token in constants.yml
+      # AppConstants.spreedly_gateway_token_cad
+      AppConstants.spreedly_gateway_token_test
     when 'eur'
       AppConstants.spreedly_gateway_token_eur
     when 'gbp'
