@@ -10,7 +10,8 @@ module Admin
 
       @transactions = Transaction.where('created_at >= ? AND created_at <= ?', start_date, end_date).includes(:donation)
       @transactions_by_currency = []
-      @transactions.group_by(&:currency).each do |currency, transactions|
+      grouped_transactions = @transactions.group_by {|transaction| transaction.currency.upcase }
+      grouped_transactions.each do |currency, transactions|
         transactions_count = transactions.count
         transactions_sum = transactions.sum { |t| t.amount_in_cents }
         @transactions_by_currency << { :currency => currency, :amount_in_cents => transactions_sum, :count => transactions_count }
