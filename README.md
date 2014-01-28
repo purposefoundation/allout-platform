@@ -86,3 +86,28 @@ be enqueued for payment, it must be:
 * recurring
 * have `last_donated_at` set
 * have `payment_method_token` set
+
+## Donation Forms
+To create a new payment method (credit card) on Spreedly, simply [pass the
+following in your form](http://docs.spreedly.com/#submit-payment-form):
+* `redirect_url` - the callback URL for Spreedly
+  (`handle_spreedly_payment_method_action_url`)
+* `environment_key` - the Spreedly environment to use
+* `credit_card[first_name]`
+* `credit_card[last_name]`
+* `credit_card[number]`
+* `credit_card[verification_value]`
+* `credit_card[month]`
+* `credit_card[year]`
+
+To ensure PCI compliance, this data should be posted to
+`https://core.spreedly.com/v1/payment_methods`.
+
+You can arbitrarily [pass
+data](http://docs.spreedly.com/payment-methods/adding-with-redirect#using-passthrough-data) to be stored on the payment method by
+specifying data fields in the form; you'll want to pass the following in
+order to create a valid donation and transaction:
+* `data[frequency]` - `one_off`, `weekly`, `monthly`, or `annual`
+* `data[amount]` - amount for the transaction. This should be passed as
+  an amount in cents
+* `data[currency]`
