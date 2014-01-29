@@ -50,6 +50,7 @@ class Donation < ActiveRecord::Base
   validate :validate_content_module_is_a_donation_ask
   validate :validate_payment_method
   validate :validate_amounts
+  validate :validate_frequency
   validate :validate_transaction_id
   validate :validate_subscription_id
 
@@ -236,6 +237,10 @@ class Donation < ActiveRecord::Base
       amount_value = self.send(amount_field)
       errors.add(amount_field, "is not valid") unless (self.active && amount_value.to_s =~ /\A[+-]?\d+\Z/ && amount_value.to_i > 0) || !self.active
     end
+  end
+
+  def validate_frequency
+    errors.add(:frequency, "is not valid") unless self.frequency.to_sym == :one_off || self.frequency.to_sym == :weekly || self.frequency.to_sym == :monthly || self.frequency.to_sym == :annual
   end
 
   def validate_transaction_id
