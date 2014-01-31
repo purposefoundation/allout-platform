@@ -22,7 +22,8 @@ development: &default
   sendgrid_api_password: <%= ENV['SENDGRID_API_PASSWORD'] %>
   devise_from_email: <%= ENV['DEVISE_MAIL_SENDER_ADDRESS'] || 'info@allout.org' %>
   unsubscribe_email: <%= ENV['UNSUBSCRIBE_EMAIL'] || 'info@allout.org' %>
-  spreedly_gateway_token_test: 'DWqZNx7SyOHZyrscU7p5gzORxky'
+  spreedly_501C3_gateway_token_test: 'DWqZNx7SyOHZyrscU7p5gzORxky'
+  spreedly_501C4_gateway_token_test: '8bTqUYITNG5TrTBX8tWTqYOxyW0'
   spreedly_gateway_token_usd: ''
   spreedly_gateway_token_cad: ''
   spreedly_gateway_token_eur: ''
@@ -47,7 +48,8 @@ test:
   blast_job_delay: <%= 0 %>
   google_maps_api_key: "AIzaSyD5j7OTcBwQFT1M_brBeVvI8pSFN2K7-7k"
   send_grid_health_check_uri: ""
-  spreedly_gateway_token_test: 'DWqZNx7SyOHZyrscU7p5gzORxky'
+  spreedly_501C3_gateway_token_test: 'DWqZNx7SyOHZyrscU7p5gzORxky'
+  spreedly_501C4_gateway_token_test: '8bTqUYITNG5TrTBX8tWTqYOxyW0'
   spreedly_gateway_token_usd: ''
   spreedly_gateway_token_cad: ''
   spreedly_gateway_token_eur: ''

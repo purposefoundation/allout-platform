@@ -28,8 +28,6 @@ class SpreedlyClient
   end
 
   def purchase_and_hash_response(payment_method)
-    Rails.logger.debug "zzz CURRENCY: #{payment_method[:data][:currency]}; GATEWAY TOKEN: #{AppConstants.spreedly_gateway_token_test}"
-
     gateway_token = get_gateway_token(payment_method[:data][:currency])
     spreedly_transaction = @spreedly.purchase_on_gateway(gateway_token, payment_method[:token], payment_method[:data][:amount],
                                                          :currency_code => payment_method[:data][:currency].upcase,
@@ -49,11 +47,11 @@ class SpreedlyClient
     when 'usd'
       # TODO: remove hard-coded test gateway token in constants.yml
       # AppConstants.spreedly_gateway_token_usd
-      AppConstants.spreedly_gateway_token_test
+      @classification == '501-c-3' ? AppConstants.spreedly_501C3_gateway_token_test : AppConstants.spreedly_501C4_gateway_token_test
     when 'cad'
       # TODO: remove hard-coded test gateway token in constants.yml
       # AppConstants.spreedly_gateway_token_cad
-      AppConstants.spreedly_gateway_token_test
+      @classification == '501-c-3' ? AppConstants.spreedly_501C3_gateway_token_test : AppConstants.spreedly_501C4_gateway_token_test
     when 'eur'
       AppConstants.spreedly_gateway_token_eur
     when 'gbp'
