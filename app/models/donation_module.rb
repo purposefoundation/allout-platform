@@ -255,12 +255,10 @@ class DonationModule < ContentModule
   end
 
   def make_all_configured_frequencies_optional
-    if frequency_options['one_off'] == 'hidden'
-      frequency_options['one_off'] = 'optional' if !suggested_amounts.try(:empty?) && !default_currency.try(:blank?) && !default_amount.try(:empty?)
-    end
-    if frequency_options['monthly'] == 'hidden'
-      frequency_options['monthly'] = 'optional' if !recurring_suggested_amounts.try(:empty?) && !recurring_default_amount.try(:blank?) && !recurring_default_currency.try(:empty?)
-    end
+    frequency_options['one_off'] = 'optional' if frequency_options['one_off'] == 'hidden' && !suggested_amounts.try(:empty?) && !default_currency.try(:blank?) && !default_amount.try(:empty?)
+    frequency_options['weekly'] = 'optional' if frequency_options['weekly'] == 'hidden' && !recurring_suggested_amounts.try(:empty?) && !recurring_default_amount.try(:blank?) && !recurring_default_currency.try(:empty?)
+    frequency_options['monthly'] = 'optional' if frequency_options['weekly'] == 'hidden' && !recurring_suggested_amounts.try(:empty?) && !recurring_default_amount.try(:blank?) && !recurring_default_currency.try(:empty?)
+    frequency_options['annual'] = 'optional' if frequency_options['weekly'] == 'hidden' && !recurring_suggested_amounts.try(:empty?) && !recurring_default_amount.try(:blank?) && !recurring_default_currency.try(:empty?)
   end
 
   def remove_whitespace(string)
