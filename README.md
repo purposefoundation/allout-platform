@@ -45,7 +45,8 @@ used in `SpreedlyClient#get_gateway_token` via the donation currency.
 Each gateway requires different credentials. Spreedly provides
 [documentation](http://docs.spreedly.com/gateways/adding) for adding a new gateway to the
 application. The `gateway_token` that gets returned should be added to the
-`config/constants.yml` for the given currency.
+`config/constants.yml` for the given currency. Unique gateway tokens must be added for each Spreedly environment that All Out
+creates (currently 501C3 and 501C4).
 
 ## Post-Recurly Migration
 Per Spreedly, when the credit cards are transferred from Recurly to
@@ -111,3 +112,8 @@ order to create a valid donation and transaction:
 * `data[amount]` - amount for the transaction. This should be passed as
   an amount in cents
 * `data[currency]`
+
+## Deploying
+When deploying the platform to Heroku, be sure to run `rake db:migrate`, as a number
+of attributes have been added to the Donation and User classes. Then run
+`heroku restart` to reload the schema and pickup any schema changes.
