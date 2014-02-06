@@ -1,6 +1,7 @@
 # config/puma.rb
 threads 1, 8
 workers 2
+preload_app!
 
 on_worker_boot do
   require "active_record"
