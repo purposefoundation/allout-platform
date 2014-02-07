@@ -1,6 +1,6 @@
 # config/puma.rb
-threads 1, 8
-workers 2
+threads ENV.fetch("MIN_PUMA_THREADS"){1},ENV.fetch("MAX_PUMA_THREADS"){1}
+workers ENV.fetch("PUMA_WORKERS"){2}
 preload_app!
 
 on_worker_boot do
