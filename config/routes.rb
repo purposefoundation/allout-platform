@@ -13,6 +13,7 @@ PurposePlatform::Application.routes.draw do
   end
   constraints resque_constraint do
     mount Resque::Server, :at => "/admin/resque"
+    match '/utility/clear_cache' => 'utility#clear_cache'
   end
 
   namespace :admin do
