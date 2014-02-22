@@ -68,7 +68,7 @@ end
 
 group :development do
   gem 'therubyracer'
-  gem 'debugger', '>= 1.4.0'
+  # gem 'debugger', '>= 1.4.0'
   # gem 'bullet'
   gem 'better_errors'
   gem 'binding_of_caller'
