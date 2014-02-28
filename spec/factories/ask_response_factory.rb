@@ -23,7 +23,7 @@ FactoryGirl.define do
   end
 
   factory :donation do
-    user              { create(:user) }
+    user              { create(:english_user) }
     action_page       { create(:action_page) }
     content_module    { create(:donation_module) }
     currency          :usd
@@ -38,10 +38,19 @@ FactoryGirl.define do
       instance.save(:validate => false)
     end
   end
-  
+
   factory :recurring_donation, :parent => :donation do
     frequency "weekly"
-    subscription_id { generate(:subscription_ids) }
+    amount_in_cents 2000
+    subscription_amount 2000
+    transaction_id 'CtK2hq1rB9yvs0qYvQz4ZVUwdKh'
+    classification '501-c-3'
+    currency 'USD'
+    payment_method_token 'SvVVGEsjBXRDhhPJ7pMHCnbSQuT'
+    subscription_id { payment_method_token }
+    card_last_four_digits '1111'
+    card_exp_month 4
+    card_exp_year 2020
   end
 
   factory :flagged_donation, :parent => :recurring_donation do
@@ -62,7 +71,9 @@ FactoryGirl.define do
   factory :transaction do
     donation        { create(:donation) }
     amount_in_cents 1000
+    external_id { donation.transaction_id }
     successful      true
+    currency { donation.currency }
   end
 
   factory :failed_transaction, :class => Transaction do

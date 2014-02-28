@@ -22,19 +22,38 @@ development: &default
   sendgrid_api_password: <%= ENV['SENDGRID_API_PASSWORD'] %>
   devise_from_email: <%= ENV['DEVISE_MAIL_SENDER_ADDRESS'] || 'info@allout.org' %>
   unsubscribe_email: <%= ENV['UNSUBSCRIBE_EMAIL'] || 'info@allout.org' %>
+  spreedly_501C3_gateway_token_test: 'DWqZNx7SyOHZyrscU7p5gzORxky'
+  spreedly_501C4_gateway_token_test: '8bTqUYITNG5TrTBX8tWTqYOxyW0'
+  spreedly_501C3_gateway_token_usd: ''
+  spreedly_501C4_gateway_token_usd: ''
+  spreedly_501C3_gateway_token_cad: ''
+  spreedly_501C4_gateway_token_cad: ''
+  spreedly_501C3_gateway_token_eur: ''
+  spreedly_501C4_gateway_token_eur: ''
+  spreedly_501C3_gateway_token_gbp: ''
+  spreedly_501C4_gateway_token_gbp: ''
   whitelisted_email_test_domains: 
     - thoughtworks.com
     - purpose.com
     - purpose.org
     - allout.org
     - niedfeldt.com
-    
 
 production:
   <<: *default
   blast_cc_email: "blasts@allout.org"
   default_cache_timeout: <%= 5.minutes %>
   blast_job_delay: <%= 5.minutes %>
+  spreedly_501C3_gateway_token_test: 'DWqZNx7SyOHZyrscU7p5gzORxky'
+  spreedly_501C4_gateway_token_test: '8bTqUYITNG5TrTBX8tWTqYOxyW0'
+  spreedly_501C3_gateway_token_usd: ''
+  spreedly_501C4_gateway_token_usd: ''
+  spreedly_501C3_gateway_token_cad: ''
+  spreedly_501C4_gateway_token_cad: ''
+  spreedly_501C3_gateway_token_eur: ''
+  spreedly_501C4_gateway_token_eur: ''
+  spreedly_501C3_gateway_token_gbp: ''
+  spreedly_501C4_gateway_token_gbp: ''
 
 test:
   <<: *default
@@ -43,6 +62,16 @@ test:
   blast_job_delay: <%= 0 %>
   google_maps_api_key: "AIzaSyD5j7OTcBwQFT1M_brBeVvI8pSFN2K7-7k"
   send_grid_health_check_uri: ""
+  spreedly_501C3_gateway_token_test: 'DWqZNx7SyOHZyrscU7p5gzORxky'
+  spreedly_501C4_gateway_token_test: '8bTqUYITNG5TrTBX8tWTqYOxyW0'
+  spreedly_501C3_gateway_token_usd: ''
+  spreedly_501C4_gateway_token_usd: ''
+  spreedly_501C3_gateway_token_cad: ''
+  spreedly_501C4_gateway_token_cad: ''
+  spreedly_501C3_gateway_token_eur: ''
+  spreedly_501C4_gateway_token_eur: ''
+  spreedly_501C3_gateway_token_gbp: ''
+  spreedly_501C4_gateway_token_gbp: ''
   s3_bucket_uri: "//xyz.s3.amazonaws.com"
   whitelisted_email_test_domains: 
     - thoughtworks.com

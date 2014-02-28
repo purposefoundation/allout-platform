@@ -63,6 +63,43 @@
 </fieldset>
 
 <fieldset>
+  <legend>Weekly Donation Amounts</legend>
+
+  <%= f.label 'recurring_default_currency[weekly]', 'Weekly default currency' %>
+  <%= select_tag "content_modules[#{f.object.id}][recurring_default_currency][weekly]", options_for_select(default_currency_options, content_module.try(:recurring_default_currency).try(:[], 'weekly')) %>
+
+  <fieldset id="recurring_currencies">
+    <% DonationModule::AVAILABLE_CURRENCIES.each do |iso_code, currency| %>
+      <% suggested_amounts = f.object.try(:recurring_suggested_amounts).try(:[], 'weekly').try(:[], iso_code.to_s) %>
+
+      <details <%= "#{suggested_amounts && !suggested_amounts.empty? ? 'open' : ''}" %>>
+        <summary><%= currency_summary(currency) %></summary>
+        <%= label_tag "content_modules[#{f.object.id}][recurring_suggested_amounts][weekly][#{iso_code.to_s}]", 'Weekly suggested amounts' %>
+        <%= text_field_tag "content_modules[#{f.object.id}][recurring_suggested_amounts][weekly][#{iso_code.to_s}]",
+            suggested_amounts,
+            :class => 'suggested_amounts',
+            'data-module-id' => "#{f.object.id}",
+            'data-frequency' => "weekly",
+            'data-currency' => "#{iso_code.to_s}" %>
+
+        <label>Weekly default amount</label>
+        <div id=<%= "recurring_default_amount_option_#{f.object.id}_weekly_#{iso_code.to_s}" %>>
+          <% default_amount_options(suggested_amounts).each do |amount| %>
+            <div class='default_amount_option' id=<%= "recurring_default_amount_option_#{f.object.id}_weekly_#{iso_code.to_s}_#{amount}" %>>
+              <% selected = f.object.try(:recurring_default_amount).try(:[], 'weekly').try(:[], iso_code.to_s) == amount %>
+              <%= radio_button_tag "content_modules[#{f.object.id}][recurring_default_amount][weekly][#{iso_code.to_s}]", amount, selected %>
+              <%= label_tag "content_modules[#{f.object.id}][recurring_default_amount][weekly][#{iso_code.to_s}][#{amount}]", amount %>
+            </div>
+          <% end %>
+        </div>
+
+        <div class='clear'></div>
+      </details>
+    <% end %>
+  </fieldset>
+</fieldset>
+
+<fieldset>
   <legend>Monthly Donation Amounts</legend>
 
   <%= f.label 'recurring_default_currency[monthly]', 'Monthly default currency' %>
@@ -89,6 +126,43 @@
               <% selected = f.object.try(:recurring_default_amount).try(:[], 'monthly').try(:[], iso_code.to_s) == amount %>
               <%= radio_button_tag "content_modules[#{f.object.id}][recurring_default_amount][monthly][#{iso_code.to_s}]", amount, selected %>
               <%= label_tag "content_modules[#{f.object.id}][recurring_default_amount][monthly][#{iso_code.to_s}][#{amount}]", amount %>
+            </div>
+          <% end %>
+        </div>
+
+        <div class='clear'></div>
+      </details>
+    <% end %>
+  </fieldset>
+</fieldset>
+
+<fieldset>
+  <legend>Annual Donation Amounts</legend>
+
+  <%= f.label 'recurring_default_currency[annual]', 'Annual default currency' %>
+  <%= select_tag "content_modules[#{f.object.id}][recurring_default_currency][annual]", options_for_select(default_currency_options, content_module.try(:recurring_default_currency).try(:[], 'annual')) %>
+
+  <fieldset id="recurring_currencies">
+    <% DonationModule::AVAILABLE_CURRENCIES.each do |iso_code, currency| %>
+      <% suggested_amounts = f.object.try(:recurring_suggested_amounts).try(:[], 'annual').try(:[], iso_code.to_s) %>
+
+      <details <%= "#{suggested_amounts && !suggested_amounts.empty? ? 'open' : ''}" %>>
+        <summary><%= currency_summary(currency) %></summary>
+        <%= label_tag "content_modules[#{f.object.id}][recurring_suggested_amounts][annual][#{iso_code.to_s}]", 'Annual suggested amounts' %>
+        <%= text_field_tag "content_modules[#{f.object.id}][recurring_suggested_amounts][annual][#{iso_code.to_s}]",
+            suggested_amounts,
+            :class => 'suggested_amounts',
+            'data-module-id' => "#{f.object.id}",
+            'data-frequency' => "annual",
+            'data-currency' => "#{iso_code.to_s}" %>
+
+        <label>Annual default amount</label>
+        <div id=<%= "recurring_default_amount_option_#{f.object.id}_annual_#{iso_code.to_s}" %>>
+          <% default_amount_options(suggested_amounts).each do |amount| %>
+            <div class='default_amount_option' id=<%= "recurring_default_amount_option_#{f.object.id}_annual_#{iso_code.to_s}_#{amount}" %>>
+              <% selected = f.object.try(:recurring_default_amount).try(:[], 'annual').try(:[], iso_code.to_s) == amount %>
+              <%= radio_button_tag "content_modules[#{f.object.id}][recurring_default_amount][annual][#{iso_code.to_s}]", amount, selected %>
+              <%= label_tag "content_modules[#{f.object.id}][recurring_default_amount][annual][#{iso_code.to_s}][#{amount}]", amount %>
             </div>
           <% end %>
         </div>

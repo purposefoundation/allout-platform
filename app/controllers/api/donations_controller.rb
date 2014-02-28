@@ -1,32 +1,42 @@
 class Api::DonationsController < Api::BaseController
-    def show
-        donation = Donation.find_by_subscription_id(params[:subscription_id])
+  def show
+    donation = Donation.find_by_subscription_id(params[:subscription_id])
 
-        if !donation
-            render :status => 404, :text => "Can't find donation with subscription id #{params[:subscription_id]}"
-        else
-            render :json => donation.to_json(:include => [:user, :action_page])
-        end
+    if !donation
+      render :status => 404, :text => "Can't find donation with subscription id #{params[:subscription_id]}"
+    else
+      render :json => donation.to_json(:include => [:user, :action_page])
     end
+  end
 
-	def confirm_payment
+  def create_spreedly_payment_method_and_purchase
+    spreedly_client = SpreedlyClient.new params[:classification]
+    purchase = spreedly_client.create_payment_method_and_purchase(params[:token])
+    if purchase[:errors]
+      render :json => purchase.to_json, :status => purchase[:code]
+    else
+      render :json => purchase.to_json
+    end
+  end
+
+  def confirm_payment
     Rails.logger.info('Payment confirmation received')
 
-		donation = Donation.find_by_transaction_id(params[:transaction_id])
-		render :status => :not_found, :text => "Can't find donation with transaction id #{params[:transaction_id]}" and return if donation.nil?
+    donation = Donation.find_by_transaction_id(params[:transaction_id])
+    render :status => :not_found, :text => "Can't find donation with transaction id #{params[:transaction_id]}" and return if donation.nil?
 
-		donation.confirm
-		render :nothing => true, :status => :ok
-	end
+    donation.confirm
+    render :nothing => true, :status => :ok
+  end
 
-	def add_payment
+  def add_payment
     Rails.logger.info('Payment added')
-		donation = Donation.find_by_subscription_id(params[:subscription_id])
-		render :status => :not_found, :text => "Can't find donation with subscription id #{params[:subscription_id]}" and return if donation.nil?
+    donation = Donation.find_by_subscription_id(params[:subscription_id])
+    render :status => :not_found, :text => "Can't find donation with subscription id #{params[:subscription_id]}" and return if donation.nil?
 
-		donation.add_payment(params[:amount_in_cents].to_i, params[:transaction_id], params[:order_number])
-		render :nothing => true, :status => :ok
-	end
+    donation.add_payment(params[:amount_in_cents].to_i, params[:transaction_id], params[:order_number])
+    render :nothing => true, :status => :ok
+  end
 
   def handle_failed_payment
     Rails.logger.info('Failed Payment notification received')
