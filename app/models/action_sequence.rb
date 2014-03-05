@@ -40,6 +40,7 @@ class ActionSequence < ActiveRecord::Base
   validates_length_of :name, :maximum => 64, :minimum => 3
 
   after_save :update_action_pages
+  after_touch :check_action_page_positions
 
   def static?
     self.campaign.nil?
@@ -120,5 +121,23 @@ class ActionSequence < ActiveRecord::Base
     self.html_meta_description ||= AppConstants.default_page_description
     self.facebook_image ||= "http://#{AppConstants.host_uri}/#{ENV['ACTION_SEQUENCE_DEFAULT_EMAIL_FACEBOOK_IMAGE']}"
     self.enabled_languages ||= []
+  end
+
+  private
+
+  def check_action_page_positions
+    sorted_array_of_action_pages.each_with_index do |page, index|
+      if page[0] != index + 1
+        action_page = ActionPage.find(page[1])
+        action_page.update_attribute(:position, index + 1)
+      end
+    end
+  end
+
+  def sorted_array_of_action_pages
+    pages = []
+    action_pages.reload
+    action_pages.each { |page| pages << [page.position, page.id]}
+    pages.sort_by { |a, b| b[0] <=> a[0] }
   end
 end

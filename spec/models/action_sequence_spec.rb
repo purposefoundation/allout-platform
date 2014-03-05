@@ -33,6 +33,15 @@ describe ActionSequence do
     end
   end
 
+
+  it "should have consistent positions" do
+    sequence = ActionSequence.create(:name => "Save the kittens!", :campaign => @campaign)
+    FactoryGirl.create(:action_page, :name => "page1", :action_sequence => sequence, :position => 1)
+    FactoryGirl.create(:action_page, :name => "page2", :action_sequence => sequence, :position => 3)
+    sequence.reload
+    sequence.action_pages.last.position.should == 2
+  end
+
   it "knows that it is static pages if campaign is nil" do
     FactoryGirl.build(:action_sequence, :campaign => @campaign, :name => "Not Static").should_not be_static
     FactoryGirl.build(:action_sequence, :campaign => nil, :name => "Static").should be_static

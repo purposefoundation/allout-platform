@@ -49,6 +49,7 @@ class ActionPage < Page
 
   after_create :seed_initial_module
   after_save ->{campaign.touch if !live_page_id}
+  after_save ->{action_sequence.touch}
   after_save ->{Rails.cache.delete("/grouped_select_options_pages/#{movement_id}")}
   after_save ->{Rails.cache.delete("/select_options_pages/#{movement_id}")}
 
@@ -255,14 +256,14 @@ class ActionPage < Page
       count_actions
     end
   end
-  
+
   private
 
   def share_counts
     Share.counts(self.id) if self.has_a_tell_a_friend?
   end
 
-  
+
   def seed_initial_module
     return if self.seeded_module.blank?
     module_class = self.seeded_module.classify.constantize
