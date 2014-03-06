@@ -4,6 +4,7 @@ Purpose.ActionSequence = (function () {
   var self = {};
 
   self.init = function (view) {
+    $("#visibility_options input").prop("disabled", true);
 
     view.publishedToggle().change(function () {
       var form = view.publishedStatusForm();
@@ -52,6 +53,12 @@ Purpose.ActionSequence = (function () {
 }) ();
 
 $.page("#action_sequences_show", function(page) {
+  $( window ).load(function() {
+    $("#visibility_and_languages input").prop("disabled", true);
+    $('.unlock-toggles').click(function() {
+      $("#visibility_and_languages input").prop("disabled", false);
+    });
+  });
   var view = View({
     publishedToggle: "#published_toggle",
     publishedMessage: ".published_message",
@@ -63,3 +70,4 @@ $.page("#action_sequences_show", function(page) {
 
   Purpose.ActionSequence.init(view);
 });
+
