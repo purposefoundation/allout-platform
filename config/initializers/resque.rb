@@ -12,14 +12,15 @@ end
 
 require 'resque'
 require 'resque-honeybadger'
+require 'resque-retry'
 
 require 'resque/failure/multiple'
 require 'resque/failure/redis'
 
 # If you don't already do `Honeybadger.configure` elsewhere.
 Resque::Failure::Honeybadger.configure do |config|
-  config.api_key = '1e93decd'
+  config.api_key = ENV.fetch("HONEYBADGER_API_KEY"){'1e93decd'}
 end
 
 Resque::Failure::Multiple.classes = [Resque::Failure::Redis, Resque::Failure::Honeybadger]
-Resque::Failure.backend = Resque::Failure::Multiple
+Resque::Failure.backend =  Resque::Failure::MultipleWithRetrySuppression
