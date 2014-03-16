@@ -1,6 +1,16 @@
 module Jobs
   class EmailClickedEvent
+    extend Resque::Plugins::Retry
+    @retry_limit = 25
+    @retry_delay = 120
     @queue = :event_tracking
+    retry_criteria_check do |exception, *args|
+      if exception.message =~ /Invalid tracking hash:/
+        false #do not retry
+      else
+        true
+      end
+    end
 
     def self.perform(movement_id,page_type,page_id,t)
       email_tracking_hash = EmailTrackingHash.decode(t)

@@ -1,5 +1,6 @@
 module Jobs
   class SendProofEmail
+  	extend Resque::Plugins::ExponentialBackoff
     @queue = :send_proof_email
 
     def self.perform(email_id, default_test_email_recipient, recipients)

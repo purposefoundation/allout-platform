@@ -1,5 +1,16 @@
 module Jobs
   class SendgridEvent
+    extend Resque::Plugins::Retry
+    retry_criteria_check do |exception, *args|
+      if exception.message =~ /Sendgrid submitted an event for a non-member:/
+        false #do not retry
+      else
+        true
+      end
+    end
+
+    @retry_limit = 25
+    @retry_delay = 120
     @queue = :event_tracking
 
     def self.perform(movement_id,params)
