@@ -4,13 +4,6 @@ module Jobs
     @queue = :event_tracking
     @retry_limit = 25
     @retry_delay = 120
-    retry_criteria_check do |exception, *args|
-      if exception.message =~ /Invalid tracking hash:/
-        false #do not retry
-      else
-        true
-      end
-    end
 
     def self.perform(t)
       email_tracking_hash=EmailTrackingHash.decode(t)
