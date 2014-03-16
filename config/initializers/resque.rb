@@ -22,5 +22,5 @@ Resque::Failure::Honeybadger.configure do |config|
   config.api_key = ENV.fetch("HONEYBADGER_API_KEY"){'1e93decd'}
 end
 
-Resque::Failure::Multiple.classes = [Resque::Failure::Redis, Resque::Failure::Honeybadger]
+Resque::Failure::MultipleWithRetrySuppression.classes = [Resque::Failure::Redis, Resque::Failure::Honeybadger]
 Resque::Failure.backend =  Resque::Failure::MultipleWithRetrySuppression
