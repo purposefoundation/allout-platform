@@ -83,9 +83,6 @@ GEM
     acts_as_list (0.3.0)
       activerecord (>= 3.0)
     addressable (2.3.5)
-    airbrake (3.1.14)
-      builder
-      json
     annotate (2.5.0)
       rake
     app_constants (1.0.4)
@@ -174,7 +171,6 @@ GEM
     enumerated_attribute (0.2.16)
       meta_programming (>= 0.2.1)
     erubis (2.7.0)
-    excon (0.25.3)
     execjs (2.0.1)
     factory_girl (4.2.0)
       activesupport (>= 3.0.0)
@@ -209,14 +205,6 @@ GEM
       rspec (~> 2.11)
     haml (4.0.3)
       tilt
-    heroku (2.40.1)
-      heroku-api (~> 0.3.7)
-      launchy (>= 0.3.2)
-      netrc (~> 0.7.7)
-      rest-client (~> 1.6.1)
-      rubyzip
-    heroku-api (0.3.15)
-      excon (~> 0.25.1)
     hike (1.2.3)
     hodel_3000_compliant_logger (0.1.1)
     honeybadger (1.9.2)
@@ -258,8 +246,7 @@ GEM
     multi_test (0.0.2)
     multipart-post (1.2.0)
     mysql2 (0.3.11)
-    netrc (0.7.7)
-    newrelic_rpm (3.6.6.147)
+    newrelic_rpm (3.7.3.204)
     nokogiri (1.6.0)
       mini_portile (~> 0.5.0)
     oink (0.10.1)
@@ -357,8 +344,13 @@ GEM
     resque-honeybadger (1.0.2)
       honeybadger
       resque (>= 1.8.0)
-    rest-client (1.6.7)
-      mime-types (>= 1.16)
+    resque-retry (1.0.0)
+      resque (>= 1.10.0)
+      resque-scheduler (>= 1.9.9)
+    resque-scheduler (2.2.0)
+      redis (>= 3.0.0)
+      resque (>= 1.20.0, < 1.25)
+      rufus-scheduler (~> 2.0)
     roo (1.12.1)
       nokogiri
       rubyzip
@@ -391,6 +383,8 @@ GEM
     ruby-ole (1.2.11.7)
     ruby-progressbar (1.2.0)
     rubyzip (0.9.9)
+    rufus-scheduler (2.0.24)
+      tzinfo (>= 0.3.22)
     sass (3.2.10)
     sass-rails (3.2.6)
       railties (~> 3.2.0)
@@ -482,7 +476,6 @@ DEPENDENCIES
   activerecord-import
   acts_as_commentable_with_threading!
   acts_as_list
-  airbrake
   annotate
   app_constants
   aws-s3
@@ -517,7 +510,6 @@ DEPENDENCIES
   gritter
   guard-rspec
   haml
-  heroku
   honeybadger
   jasmine
   jquery-rails
@@ -539,7 +531,7 @@ DEPENDENCIES
   purpose_country_select (~> 0.0.5)!
   quiet_assets
   rack-test
-  rails (~> 3.2.13)
+  rails (~> 3.2.14)
   rails_best_practices
   rb-readline
   recurly
@@ -547,6 +539,7 @@ DEPENDENCIES
   redis-rails
   resque
   resque-honeybadger
+  resque-retry
   roo
   rspec-html-matchers
   rspec-instafail

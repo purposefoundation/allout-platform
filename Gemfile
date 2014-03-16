@@ -1,8 +1,7 @@
 source 'https://rubygems.org'
 ruby '2.0.0'
 
-gem 'rails', '~>3.2.13'
-gem 'heroku'
+gem 'rails', '~>3.2.14'
 gem 'mysql2', '0.3.11'
 gem 'haml'
 #gem 'sprockets', '~>2.1.2'
@@ -43,7 +42,6 @@ gem 'activerecord-import'
 gem 'newrelic_rpm' #, '3.5.3.25'
 gem 'redcarpet'
 gem 'activemodel-warnings'
-gem 'airbrake'
 gem 'money'
 gem 'google_currency'
 gem 'profanalyzer', :git => 'git://github.com/purposecampaigns/profanalyzer.git'
@@ -60,7 +58,7 @@ gem 'roo'
 gem 'recurly'
 gem 'font-awesome-rails'
 gem 'resque'
-
+gem 'resque-retry'
 
 group :assets do
   gem 'uglifier', '>= 1.0.3'
@@ -95,7 +93,6 @@ group :development, :test do
   gem 'jslint_on_rails'
   gem 'rspec-rails' #, :require => false #, '~> 2.8.1'
   gem 'guard-rspec' #, '~> 0.7.0'
-  gem 'launchy'
   gem 'selenium-webdriver' #, "~> 2.27.2"
   gem 'capybara'#, '1.1.2'
   gem 'database_cleaner' #, "~> 0.7.1"
