@@ -2,8 +2,8 @@ module Jobs
   class EmailOpenedEvent
     extend Resque::Plugins::Retry
     @queue = :event_tracking
-    @retry_limit = 25
-    @retry_delay = 120
+    @retry_limit = 2
+    @retry_delay = 1200
 
     def self.perform(t)
       email_tracking_hash=EmailTrackingHash.decode(t)

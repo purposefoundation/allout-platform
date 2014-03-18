@@ -1,8 +1,8 @@
 module Jobs
   class EmailClickedEvent
     extend Resque::Plugins::Retry
-    @retry_limit = 25
-    @retry_delay = 120
+    @retry_limit = 2
+    @retry_delay = 1200
     @queue = :event_tracking
 
     def self.perform(movement_id,page_type,page_id,t)
