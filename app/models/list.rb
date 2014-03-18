@@ -40,7 +40,7 @@ class List < ActiveRecord::Base
 
   def count_by_rules_excluding_users_from_push(rules=self.rules, &block)
     final_result = execute_query(:select_all, self.count_by_language_relation, rules, &block)
-    
+
     languages = Language.all.index_by(&:id)
     final_result.inject({}) do |h, row|
       language_name = languages[row['language_id']].try(:name) || "Unknown"
@@ -54,10 +54,12 @@ class List < ActiveRecord::Base
     relation = self.list_relation
     relation = filter_users_by_language(relation, email)
 
+    result = execute_query :select_values, relation, self.rules, &block
     if options[:limit].is_a? Fixnum
-      relation = relation.order(:random).limit(options[:limit])
+      result.sample(options[:limit])
+    else
+      return result
     end
-    execute_query :select_values, relation, self.rules, &block
   end
 
   def count_by_language_relation
@@ -110,7 +112,7 @@ class List < ActiveRecord::Base
   def get_key(rule)
     rule.class.name.underscore.split("/")[1].to_sym
   end
- 
+
   def create_tables!(rules=self.rules, &block)
     rules.each do |rule|
       elapsed_time, result = measure { ReadOnly.connection.execute rule.create_sql }
