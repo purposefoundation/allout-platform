@@ -19,8 +19,16 @@ class HtmlModule < ContentModule
   placeable_in ALL_CONTAINERS
   option_fields :use_markdown
 
+  before_save :replace_s3_links
+
   def use_markdown?
     !!use_markdown
+  end
+
+  def replace_s3_links
+    if ENV.fetch("INSTART_ENABLED"){false} == "true"
+      self.content.gsub!("s3.amazonaws.com","insnw.net")
+    end
   end
 
   def as_json(options = {})
