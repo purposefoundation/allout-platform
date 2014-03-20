@@ -15,7 +15,7 @@ module Jobs
         page.register_click_from email, user
       else
         Rails.logger.debug "Invalid Decoded Email Tracking Hash: #{email_tracking_hash}"
-        raise "Invalid tracking hash: #{t}"
+        Rails.logger.debug "Invalid tracking hash: #{t}"
       end
     end
   end

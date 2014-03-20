@@ -13,7 +13,7 @@ module Jobs
         UserActivityEvent.email_viewed!(user, email)
       else
         Rails.logger.debug "Invalid Decoded Email Tracking Hash: #{email_tracking_hash}"
-        raise "Invalid tracking hash: #{t}"
+        Rails.logger.debug "Invalid tracking hash: #{t}"
       end
     end
   end
