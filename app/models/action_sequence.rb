@@ -40,7 +40,7 @@ class ActionSequence < ActiveRecord::Base
   validates_length_of :name, :maximum => 64, :minimum => 3
 
   after_save :update_action_pages
-  after_touch :check_action_page_positions
+  after_save :check_action_page_positions
 
   def static?
     self.campaign.nil?
