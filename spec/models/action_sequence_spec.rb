@@ -38,6 +38,7 @@ describe ActionSequence do
     sequence = ActionSequence.create(:name => "Save the kittens!", :campaign => @campaign)
     FactoryGirl.create(:action_page, :name => "page1", :action_sequence => sequence, :position => 1)
     FactoryGirl.create(:action_page, :name => "page2", :action_sequence => sequence, :position => 3)
+    sequence.save! 
     sequence.reload
     sequence.action_pages.last.position.should == 2
   end

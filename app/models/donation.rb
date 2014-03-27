@@ -68,7 +68,7 @@ class Donation < ActiveRecord::Base
   end
 
   def donation_amount
-    if(self.frequency == 'one_off')
+    if(self.frequency.to_s == 'one_off')
       Money.from_numeric(amount_in_cents.to_f / 100, currency).format
     else
       Money.from_numeric(subscription_amount.to_f / 100, currency).format
