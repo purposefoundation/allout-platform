@@ -49,7 +49,6 @@ module Admin
       @intermediate_result = ListIntermediateResult.create(list: @list, rules: @list.rules)
       @list.update_attributes(:saved_intermediate_result => @intermediate_result) if options[:save]
       Resque.enqueue(Jobs::ListBlasterIntermediate, @intermediate_result.id)
-      #@intermediate_result.delay(:queue => QueueConfigs::LIST_CUTTER_BLASTER_QUEUE).update_results!
 
       if (!options[:save] && new)
         @list.update_attributes(:rules => [])
