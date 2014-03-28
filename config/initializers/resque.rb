@@ -1,4 +1,4 @@
-Dir["../../app/jobs/*.rb"].each { |file| require file }
+Dir["../../app/models/jobs/*.rb"].each { |file| require file }
 
 Resque.redis = ENV['REDIS_URL'] || 'localhost'
 Resque.redis.namespace = "resque:platform"
