@@ -66,6 +66,7 @@ class EmailTargetsModule < ContentModule
       options_as_json.delete('targets')
       json['options'] = options_as_json
       json['emails_sent'] = emails_sent
+      json['actions_taken_counter'] = actions_taken_counter
     end
   end
 
