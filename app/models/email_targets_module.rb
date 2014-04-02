@@ -89,6 +89,10 @@ class EmailTargetsModule < ContentModule
     user_email
   end
 
+  def actions_taken_counter
+    pages.first ? (UserEmail.where(:page_id => pages.first.id).count) : 0
+  end
+
   def targets_names
     self.targets.try(:scan, /(?:\'|\")([^(?:\'|\")]*)(?:\'|\")/).flatten
   end
