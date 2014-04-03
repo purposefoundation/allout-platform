@@ -39,10 +39,9 @@ describe Push do
     push = create(:push)
     in_progress_blast = create(:blast, :push => push)
     blast_1 = create(:blast, :push => push)
-    create(:proofed_email, :blast => blast_1, :delayed_job_id => nil)
+    create(:proofed_email, :blast => blast_1)
     push.should_not have_pending_jobs
-
-    create(:proofed_email, :blast => blast_1, :delayed_job_id => 10)
+    create(:proofed_email, :blast => in_progress_blast, :run_at => 5.minutes.from_now)
     push.should have_pending_jobs
   end
 

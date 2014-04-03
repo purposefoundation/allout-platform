@@ -46,8 +46,9 @@ describe Blast do
     it "should return true if there are pending jobs" do
       list = create(:list)
       blast = create(:blast, :name => "Fight like a mongoose!", :list => list)
-      email = build_email(:body => "Proofed", :blast => blast, :delayed_job_id => 10)
-      build_email(:body => "Proofed", :blast => blast, :delayed_job_id => nil)
+      email = create(:email, :body => "Proofed", :blast => blast, :run_at => Time.now, :test_sent_at => Time.now)
+      build_email(:body => "Proofed", :blast => blast)
+      puts "Blasts: #{blast.proofed_emails}"
 
       blast.has_pending_jobs?.should be_true
     end
@@ -55,8 +56,7 @@ describe Blast do
     it "should return false if there are no pending jobs" do
       list = create(:list)
       blast = create(:blast, :name => "Fight like a mongoose!", :list => list)
-      build_email(:body => "Proofed", :blast => blast, :delayed_job_id => nil)
-
+      build_email(:body => "Proofed", :blast => blast, :run_at => nil)
       blast.has_pending_jobs?.should be_false
     end
   end
@@ -108,27 +108,19 @@ describe Blast do
 
     it "should cancel the delivery of any pending, non-locked jobs" do
       list = create(:list)
-      blast = Blast.create!(:name => "Save the walruses!", :list => list, :delayed_job_id => 17, :push => create(:push))
-
-      job_double = double()
-      job_double.should_receive(:destroy_all)
-      Delayed::Job.should_receive(:where) do |hash|
-        hash[:id].should eql 17
-        hash[:locked_at].should be_nil
-        job_double
-      end
-
+      blast = Blast.create!(:name => "Save the walruses!", :list => list, :push => create(:push))
+      email = create(:email, :run_at => Time.now, :blast => blast)
+      blast.reload
+      puts "Blasts: #{blast.emails.inspect}"
       blast.cancel.should be_true
 
-      blast.reload
-      blast.delayed_job_id.should be_nil
+      email.reload
+      email.run_at.should be_nil
     end
 
     it "should return false if no job ids are available" do
       list = create(:list)
       blast = Blast.create!(:name => "Save the walruses!", :list => list, :push => create(:push))
-
-      Delayed::Job.should_not_receive(:destroy)
 
       blast.cancel.should be_false
     end
@@ -136,20 +128,14 @@ describe Blast do
 
   describe "#remaining_time_for_existing_jobs" do
     it "should return the remaining time in seconds for any pending jobs" do
-      class DelayedJob < ActiveRecord::Base;
-      end
-      job = DelayedJob.create(:run_at => 14.minutes.from_now)
-      blast = Blast.create!(:name => "Save the walruses!", :delayed_job_id => job.id, :push => create(:push))
-
+      blast = Blast.create!(:name => "Save the walruses!", :push => create(:push))
+      create(:email, :run_at => 14.minutes.from_now, :blast => blast)
       blast.remaining_time_for_existing_jobs.should > 0
     end
 
     it "should return zero if negative result" do
-      class DelayedJob < ActiveRecord::Base;
-      end
-      job = DelayedJob.create(:run_at => 1.minute.ago)
-      blast = Blast.create!(:name => "Save the walruses!", :push => create(:push))
-      build_email(:delayed_job_id => job.id, :test_sent_at => Time.now, :blast => blast)
+      blast = Blast.create!(:name => "Save the walruses!", :push => create(:push),:run_at => 1.minute.ago)
+      build_email(:test_sent_at => Time.now, :blast => blast)
 
       blast.remaining_time_for_existing_jobs.should == 0
     end
@@ -201,25 +187,24 @@ describe Blast do
   end
 
   describe '#list_cuttable?' do
-    before do
-      @blast = create(:blast)
-    end
 
     it 'should not be list_cuttable if an email is scheduled' do
-      unscheduled_email = create(:email, :test_sent_at => Time.now, :blast => @blast, :delayed_job_id => nil)
-      scheduled_email = create(:email, :test_sent_at => Time.now, :blast => @blast, :delayed_job_id => 23)
-      @blast.should_not be_list_cuttable
+      blast = create(:blast)
+      scheduled_email = create(:email, :test_sent_at => Time.now, :blast => blast, :run_at => Time.now)
+      blast.should_not be_list_cuttable
     end
 
     it 'should not be list_cuttable if an email is sent' do
-      unscheduled_email = create(:email, :test_sent_at => Time.now, :blast => @blast, :delayed_job_id => nil)
-      sent_email = create(:email, :test_sent_at => Time.now, :blast => @blast, :delayed_job_id => nil, :sent => true)
-      @blast.should_not be_list_cuttable
+      blast = create(:blast, :run_at => Time.now)
+      unscheduled_email = create(:email, :test_sent_at => Time.now, :blast => blast, :delayed_job_id => nil)
+      sent_email = create(:email, :test_sent_at => Time.now, :blast => blast, :sent => true)
+      blast.should_not be_list_cuttable
     end
 
     it 'should be list_cuttable if none of the emails is scheduled or sent' do
-      unscheduled_email = create(:email, :test_sent_at => Time.now, :blast => @blast, :delayed_job_id => nil)
-      @blast.should be_list_cuttable
+      blast = create(:blast)
+      unscheduled_email = create(:email, :test_sent_at => Time.now, :blast => blast)
+      blast.should be_list_cuttable
     end
   end
 end

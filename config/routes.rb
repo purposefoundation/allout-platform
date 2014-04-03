@@ -1,12 +1,12 @@
 require 'resque/server'
+require 'resque_scheduler'
+require 'resque_scheduler/server'
 
 PurposePlatform::Application.routes.draw do
 
 
   devise_for :users
   devise_for :platform_users
-
-
 
   resque_constraint = lambda do |request|
     request.env['warden'].authenticate!({ :scope => :platform_user })

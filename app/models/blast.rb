@@ -10,7 +10,7 @@
 #  updated_at     :datetime         not null
 #  delayed_job_id :integer
 #  failed_job_ids :string(255)
-#
+#  run_at         :datetime
 
 class Blast < ActiveRecord::Base
   acts_as_paranoid
@@ -30,6 +30,7 @@ class Blast < ActiveRecord::Base
 
   def send_proofed_emails!(options={})
     emails = (options[:email_ids] ? proofed_emails.for_ids(options[:email_ids]).all : proofed_emails.all).reject { |e| e.sent }
+    emails.each{|e| Email.find(e.id).update_attribute(:run_at, options[:run_at_utc]) }
     segment_user_ids_per_job(emails, options[:limit], options[:run_at_utc])
   end
 
@@ -71,20 +72,23 @@ class Blast < ActiveRecord::Base
   end
 
   def cancel
-    return false if self.delayed_job_id.blank?
-    Delayed::Job.where(:id => self.delayed_job_id, :locked_at => nil).destroy_all
-    self.update_attribute(:delayed_job_id, nil)
+    pending_emails = emails.where("run_at IS NOT NULL")
+    return false if pending_emails.count == 0
+    pending_emails.each do |email|
+      Resque.remove_delayed_selection { |args| args[0]['email_id'] == id }
+      email.update_attribute(:run_at, nil)
+    end
     true
   rescue Exception => e
+    puts "Exception #{e}"
     Rails.logger.error "Tried deleting jobs with ids: #{self.delayed_job_id} - Original exception: #{e.message}"
     false
   end
 
   def remaining_time_for_existing_jobs
-    job_ids = [self.delayed_job_id]
-    jobs = Delayed::Job.where(:id => job_ids).order("run_at desc").limit(1)
-    return 0 if jobs.blank?
-    seconds = jobs.first.run_at - Time.now
+    return 0 if emails.where("run_at IS NOT NULL").count == 0
+    run_at = emails.where("run_at IS NOT NULL").first.run_at
+    seconds = run_at - Time.now
     seconds < 0 ? 0 : (seconds * 100).round.to_f / 100
   end
 

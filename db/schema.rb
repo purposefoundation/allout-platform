@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130801173251) do
+ActiveRecord::Schema.define(:version => 20140403075435) do
 
   create_table "action_sequences", :force => true do |t|
     t.integer  "campaign_id"
@@ -64,6 +64,7 @@ ActiveRecord::Schema.define(:version => 20130801173251) do
     t.datetime "updated_at",     :null => false
     t.integer  "delayed_job_id"
     t.string   "failed_job_ids"
+    t.datetime "run_at"
   end
 
   create_table "campaign_share_stats", :id => false, :force => true do |t|
@@ -216,6 +217,7 @@ ActiveRecord::Schema.define(:version => 20130801173251) do
     t.string   "alternate_key_b",   :limit => 25
     t.boolean  "sent"
     t.datetime "sent_at"
+    t.datetime "run_at"
   end
 
   create_table "featured_content_collections", :force => true do |t|

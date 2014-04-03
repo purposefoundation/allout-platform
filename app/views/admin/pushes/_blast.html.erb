@@ -70,7 +70,7 @@
         <% blast.proofed_emails.pending_emails.each do |email| %>
           <tr>
             <td class="email-name"><%= link_to email.display_name, edit_admin_movement_email_path(@movement, email) %></td>
-            <td><%= email.delayed_job.run_at.to_s(:schedule_time)%></td>
+            <td><%= email.run_at.to_s(:schedule_time)%></td>
             <td class='in-progress'>
               <span class='countdown'><%= email.remaining_time_to_send %></span>
               <%= link_to "CANCEL", admin_movement_email_cancel_schedule_path(@movement, email, :blast_id => blast.id), :method => 'POST', :class => "button abort" %>

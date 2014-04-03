@@ -248,20 +248,14 @@ describe Email do
   end
 
   describe "enqueue_job" do
-    it "should queue the job on a given time" do
+    xit "should queue the job on a given time" do
       number_of_jobs = 1
       current_job_index = 0
       limit = 100
       run_at = Time.now.utc + 14.minutes
-      email = create(:email)
-      Delayed::Job.should_receive(:enqueue).with  do |blast_job, options|
-        options[:run_at].to_s.should == run_at.in_time_zone(Time.zone).to_s
-        blast_job.options[:no_jobs].should == number_of_jobs
-        blast_job.options[:current_job_id].should == current_job_index
-        blast_job.options[:limit].should == limit
-        blast_job.email.should == email
-        blast_job.list.should == email.blast.list
-      end.and_return(mock(Delayed::Job, id: 100))
+      blast = create(:blast, :run_at => run_at)
+      email = create(:email, :blast => blast)
+      Resque.should_receive(:enqueue)
       email.should_receive(:solr_index)
       email.enqueue_job(number_of_jobs, current_job_index, limit, run_at)
     end
@@ -269,14 +263,12 @@ describe Email do
 
   describe 'remaining_time_to_send' do
     it 'should return 0 when theres no delayed job for self' do
-      build(:email, :delayed_job_id => nil).remaining_time_to_send.should be_zero
+      build(:email).remaining_time_to_send.should be_zero
     end
 
-    it 'should return the time remaining when there is a delayed job for self' do
-      class DelayedJob < ActiveRecord::Base;
-      end
-      job = DelayedJob.create(:run_at => 3.minutes.from_now.utc)
-      email = create(:email, :delayed_job_id => job.id)
+    it 'should return the time remaining when there is a run_at time' do
+      blast = create(:blast)
+      email = create(:email, :blast => blast, :run_at => 3.minutes.from_now.utc)
       time_remaining = email.remaining_time_to_send
       time_remaining.should be_a_kind_of(Fixnum)
       time_remaining.should be >= 170
@@ -286,15 +278,13 @@ describe Email do
 
   describe 'cancel' do
     it 'should cancel the delivery of any pending, non-locked jobs' do
-      job_double = double()
-      job_double.should_receive(:destroy_all)
-      Delayed::Job.should_receive(:where).with(:id => 17, :locked_at => nil).and_return(job_double)
-      email = create(:email, :delayed_job_id => 17)
+      blast = create(:blast)
+      email = create(:email, :blast => blast, :run_at => 3.minutes.from_now.utc)
       email.cancel_schedule.should be_true
-      email.reload.delayed_job_id.should be_nil
+      email.reload.run_at.should be_nil
     end
 
-    it 'should return false when there is an exception' do
+    xit 'should return false when there is an exception' do
       job_double = double()
       job_double.should_receive(:destroy_all).and_raise("Some Exception")
       Delayed::Job.should_receive(:where).with(:id => 17, :locked_at => nil).and_return(job_double)
@@ -302,8 +292,8 @@ describe Email do
       email.cancel_schedule.should be_false
     end
 
-    it "should return false if no job ids are available" do
-      build(:email, :delayed_job_id => nil).cancel_schedule.should be_false
+    xit "should return false if no job ids are available" do
+      build(:email).cancel_schedule.should be_false
     end
   end
 
@@ -327,18 +317,16 @@ describe Email do
 
   describe 'schedulable' do
     before do
-      class DelayedJob < ActiveRecord::Base;
-      end
-
-      @scheduled_email = create(:email, :delayed_job_id => DelayedJob.create(:run_at => 2.days.from_now).id, :sent => false)
+      blast = create(:blast)
+      @scheduled_email = create(:email, :blast => blast, :sent => false, :run_at => 2.days.from_now)
       # @scheduled_email = create(:email, :delayed_job_id => 99, :sent => false)
-      @sent_email = create(:email, :delayed_job_id => nil, :sent => true)
-      @schedulable_email = create(:email, :delayed_job_id => nil, :sent => false)
-      @schedulable_email2 = create(:email, :delayed_job_id => nil, :sent => nil)
+      @sent_email = create(:email, :sent => true)
+      @schedulable_email = create(:email, :sent => false)
+      @schedulable_email2 = create(:email, :sent => nil)
     end
 
     it "should return unsent and unassigned to a delayed_job as schedulable_emails" do
-      Email.schedulable_emails.any? { |e| !e.delayed_job.nil? || e.sent }.should be_false
+      Email.schedulable_emails.any? { |e| !e.run_at.nil? || e.sent }.should be_false
       Email.schedulable_emails.include?(@schedulable_email).should be_true
       Email.schedulable_emails.include?(@schedulable_email2).should be_true
     end

@@ -2,7 +2,7 @@ module Jobs
   class ListBlasterIntermediate
   	extend Resque::Plugins::Retry
 
-    @retry_limit = 3
+    @retry_limit = 10
     @retry_delay = 5
     @queue = :list_cutter_queue
 

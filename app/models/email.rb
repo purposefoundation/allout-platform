@@ -20,7 +20,7 @@
 #  alternate_key_b   :string(25)
 #  sent              :boolean
 #  sent_at           :datetime
-#
+#  run_at            :datetime
 
 class Email < ActiveRecord::Base
   include HasLinksWithEmailTrackingHash
@@ -30,7 +30,6 @@ class Email < ActiveRecord::Base
   acts_as_paranoid
   belongs_to :blast
   belongs_to :language
-  belongs_to :delayed_job, :class_name => '::Delayed::Job'
 
   validates_presence_of :blast, :name, :from, :subject, :body, :reply_to, :language_id
   validates :from, :email_format => true, :unless => ->{from.blank?}
@@ -42,8 +41,8 @@ class Email < ActiveRecord::Base
   after_save ->{Rails.cache.delete("/grouped_select_options_email/#{campaign.movement_id}")}
 
   scope :proofed_emails, lambda { where("test_sent_at IS NOT ?", nil) }
-  scope :pending_emails, lambda { where("delayed_job_id IS NOT NULL") }
-  scope :schedulable_emails, lambda { where("delayed_job_id IS NULL and (sent IS NULL OR sent = false)") }
+  scope :pending_emails, lambda { where("run_at IS NOT NULL")}
+  scope :schedulable_emails, lambda { where("run_at IS NULL").where("sent IS NULL OR sent = false") }
   scope :sent_emails, lambda { where(:sent => true) }
   scope :for_ids, lambda { |email_ids| where(id: email_ids) }
   scope :for_movement_id, lambda { |movement_id| joins(:blast => {:push => :campaign}).where('campaigns.movement_id' => movement_id) }
@@ -96,17 +95,13 @@ class Email < ActiveRecord::Base
     if batch_size > 100
       batch_size = 100
     end
-    logger.debug "LDEBUG: Total user ids for email #{self.id} - #{user_ids.count}"
     user_ids.each_slice(batch_size).with_index do |slice,i|
       begin
         recipients = User.select(:email).where(:id => slice).order(:email).map(&:email)
-        logger.debug "LDEBUG: User ids for email #{self.id} slice # #{i} - #{slice.count}. Recipients: #{recipients.count}"
-
         if i==0 && AppConstants.blast_cc_email.present?
           recipients << AppConstants.blast_cc_email
         end
         SendgridMailer.blast_email(self, :recipients => recipients).deliver unless sendgrid_interation_is_disabled?
-        #might be good to compare email_sent to slice here?
         self.push.batch_create_sent_activity_event!(slice, self)
         EmailRecipientDetail.create_with(self, slice).save
       rescue Exception => e
@@ -128,7 +123,7 @@ class Email < ActiveRecord::Base
   end
 
   def schedulable?
-    delayed_job.nil? && (sent.nil? || !sent)
+    run_at.nil? && (sent.nil? || !sent)
   end
 
   def clear_test_timestamp!
@@ -137,30 +132,28 @@ class Email < ActiveRecord::Base
   end
 
   def enqueue_job(number_of_jobs, current_job_index, limit, run_at)
-    blast_job = BlastJob.new(
+    options = {
         :no_jobs => number_of_jobs,
         :current_job_id => current_job_index,
-        :list => blast.list,
-        :email => self,
         :limit => limit
-    )
-
+    }
     scheduled_time_in_app_time_zone = run_at.in_time_zone(Time.zone)
-    job_handle = Delayed::Job.enqueue(blast_job, :run_at => scheduled_time_in_app_time_zone,
-                                                 :queue => QueueConfigs::LIST_CUTTER_BLASTER_QUEUE)
-    update_attribute(:delayed_job_id, job_handle.id)
+    Resque.enqueue_at(scheduled_time_in_app_time_zone, Jobs::BlastJob, :email_id => self.id, :list_id => blast.list.id, :options => options)
+    self.run_at = run_at
+    self.save
   end
 
   def remaining_time_to_send
-    delayed_job_id ? (delayed_job.run_at.utc - Time.now.utc).round : 0
+    run_at ? (run_at - Time.now.utc).round : 0
   end
 
   def cancel_schedule
-    return false unless delayed_job_id
-    Delayed::Job.where(:id => delayed_job_id, :locked_at => nil).destroy_all
-    self.update_attribute(:delayed_job_id, nil)
+    Resque.remove_delayed_selection { |args| args[0]['email_id'] == id }
+    self.run_at = nil
+    self.save!
     true
   rescue Exception => e
+    puts "Exceptions #{e.message}"
     Rails.logger.error "Tried deleting jobs with ids: #{self.delayed_job_id} - Original exception: #{e.message}"
     false
   end

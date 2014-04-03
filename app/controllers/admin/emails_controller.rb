@@ -21,7 +21,7 @@ module Admin
 
     def clone
       @email = Email.find(params[:email_id])
-      attributes_to_ignore = @email.attributes.keys - ['subject', 'from', 'reply_to', 'body', 'language_id', 'blast_id']
+      attributes_to_ignore = @email.attributes.keys - ['subject', 'from', 'reply_to', 'body', 'language_id', 'blast_id', 'run_at']
       @email = @email.dup({:except => attributes_to_ignore})
       render :new
     end
