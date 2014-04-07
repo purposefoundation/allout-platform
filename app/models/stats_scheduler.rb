@@ -2,7 +2,7 @@ class StatsScheduler < ActiveRecord::Base
   def self.schedule_push_stats
     now = Time.zone.now
     6.times do
-      UniqueActivityByEmail.delay(:run_at=>now).update!
+    	Resque.enqueue_at(now, Jobs::ScheduleStatsUpdate)
       now += 10.minutes
     end
   end

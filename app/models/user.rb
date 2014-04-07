@@ -58,7 +58,7 @@ class User < ActiveRecord::Base
 
   has_and_belongs_to_many :events_attended, :class_name => "Event", :association_foreign_key => "event_id",
                           :foreign_key => "attendee_id", :join_table => "events_attendees"
-  
+
   before_validation :profanalyze_name
   before_validation :downcase_email
   before_validation :ensure_source_is_present
@@ -75,7 +75,7 @@ class User < ActiveRecord::Base
   scope :unsubscribed, where(:is_member => false)
   scope :subscribed_to, lambda { |movement| subscribed.for_movement(movement) }
 
-  searchable do
+  searchable :auto_index => false, :auto_remove => false do
     text :id
     text :first_name
     text :last_name
@@ -83,7 +83,9 @@ class User < ActiveRecord::Base
     boolean :is_admin
     time :updated_at
   end
-  handle_asynchronously :solr_index
+
+  after_commit   :resque_solr_update, :if => :persisted?
+  before_destroy :resque_solr_remove
 
   class << self
     def update_random_values
@@ -239,5 +241,13 @@ class User < ActiveRecord::Base
 
   def ensure_source_is_present
     self.source = :movement if self.source.nil?
+  end
+
+  def resque_solr_update
+    Resque.enqueue(Jobs::SolrUpdate, self.class.to_s, id)
+  end
+
+  def resque_solr_remove
+    Resque.enqueue(Jobs::SolrRemove, self.class.to_s, id)
   end
 end

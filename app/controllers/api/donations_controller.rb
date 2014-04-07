@@ -32,23 +32,24 @@ class Api::DonationsController < Api::BaseController
     Rails.logger.info('Failed Payment notification received')
 
     page = movement.find_published_page("#{params['action_page']}")
-    donation_error = DonationError.new({ :movement => movement, :action_page => page })
-    donation_error.error_code = params['error_code']
-    donation_error.message = params['message']
-    donation_error.member_email = params['member_email']
-    donation_error.reference = params['reference']
-
     member = movement.members.find_by_email(params['member_email'])
-    donation_error.member_first_name = member.first_name
-    donation_error.member_last_name = member.last_name
-    donation_error.member_language_iso = member.language.iso_code
-    donation_error.member_country_iso = member.country_iso
     donation = Donation.find_by_subscription_id(params['subscription_id'])
-    donation_error.donation_payment_method = donation.payment_method
-    donation_error.donation_amount_in_cents = params['donation_amount_in_cents']
-    donation_error.donation_currency = donation.currency
+    new_params = {:movement => movement.id,
+                :action_page => page.id,
+                :error_code => params['error_code'],
+                :message => params['message'],
+                :member_email => params['member_email'],
+                :reference => params['reference'],
+                :member_first_name => member.first_name,
+                :member_last_name => member.last_name,
+                :member_country_iso => member.language.iso_code,
+                :member_country_iso => member.country_iso,
+                :donation_payment_method => donation.payment_method,
+                :donation_amount_in_cents => params['donation_amount_in_cents'],
+                :donation_currency => donation.currency
+                 }
 
-    PaymentErrorMailer.delay.report_error(donation_error)
+    Resque.enqueue(Jobs::SendDonationError, new_params)
 
     render :nothing => true, :status => :ok
   end

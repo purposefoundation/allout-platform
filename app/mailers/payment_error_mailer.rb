@@ -4,7 +4,7 @@ class PaymentErrorMailer < ActionMailer::Base
 
 	DEFAULT_SUBJECT = "[%s] - Payment Transaction Error"
 
-	def report_error(donation_error)		
+	def report_error(donation_error)
 		recipient_list = error_emails_recipient_list(donation_error.movement)
 		if recipient_list.nil? || recipient_list.empty?
 			return
@@ -36,6 +36,6 @@ class PaymentErrorMailer < ActionMailer::Base
 
   private
 	def error_emails_recipient_list(movement)
-		(ENV["#{movement.slug.upcase}_PAYPALERROR_EMAIL_RECIPIENTS"] || '').split(',')
+		(ENV["#{movement.slug.upcase}_PAYPALERROR_EMAIL_RECIPIENTS"] || 'systems@allout.org').split(',')
 	end
 end

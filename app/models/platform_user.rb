@@ -39,7 +39,7 @@ class PlatformUser < ActiveRecord::Base
 
   after_create :send_confirmation_email
 
-  searchable do
+  searchable :auto_index => false, :auto_remove => false do
     text  :id
     text  :first_name
     text  :last_name
@@ -48,7 +48,8 @@ class PlatformUser < ActiveRecord::Base
     time :updated_at
     integer :movement_ids, :multiple => true
   end
-  handle_asynchronously :solr_index
+  after_commit   :resque_solr_update, :if => :persisted?
+  before_destroy :resque_solr_remove
 
   def full_name
     joined = "#{first_name} #{last_name}".strip
@@ -64,7 +65,7 @@ class PlatformUser < ActiveRecord::Base
     is_admin? ? Movement.all : movements.for_all_roles.all
   end
 
-  #without this, the admin will never be able to login 
+  #without this, the admin will never be able to login
   def primary_movement
     movements_administered.first || movements_allowed.first
   end
@@ -95,8 +96,15 @@ class PlatformUser < ActiveRecord::Base
 
   private
   def send_confirmation_email
-    PlatformUserMailer.subscription_confirmation_email(self).deliver
+    Resque.enqueue(Jobs::SendPlatformUserEmail, self.id)
   end
-  handle_asynchronously :send_confirmation_email unless Rails.env.test?
+
+  def resque_solr_update
+    Resque.enqueue(Jobs::SolrUpdate, self.class.to_s, id)
+  end
+
+  def resque_solr_remove
+    Resque.enqueue(Jobs::SolrRemove, self.class.to_s, id)
+  end
 
 end

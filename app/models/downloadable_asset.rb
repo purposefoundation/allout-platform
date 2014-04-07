@@ -19,11 +19,11 @@ class DownloadableAsset < ActiveRecord::Base
 
   acts_as_user_stampable
   belongs_to :movement
-    
+
   FILE_TEMPLATE = ":movement_slug-:id-:filename"
 
   def self.has_attached_file_via_s3
-    has_attached_file :asset, 
+    has_attached_file :asset,
       :storage => :s3,
       :whiny => true,
       :bucket => S3[:bucket],
@@ -50,17 +50,18 @@ class DownloadableAsset < ActiveRecord::Base
 
   validates_attachment_presence :asset
 
-  searchable do
+  searchable :auto_index => false, :auto_remove => false do
     time :created_at
-    text :asset_file_name_text_substring do 
+    text :asset_file_name_text_substring do
       asset_file_name
     end
-    text :link_text_text_substring do 
+    text :link_text_text_substring do
       link_text
     end
     integer :movement_id
   end
-  handle_asynchronously :solr_index
+  after_commit   :resque_solr_update, :if => :persisted?
+  before_destroy :resque_solr_remove
 
   def attachment?
     asset? && !asset_file_name.blank? && (S3[:enabled] || File.exists?(asset.path))
@@ -69,12 +70,21 @@ class DownloadableAsset < ActiveRecord::Base
   def name
     "#{movement_slug}-#{id}-#{asset_file_name}"
   end
-  
+
   def kilobytes
     asset_file_size / 1024
   end
 
   def movement_slug
     self.movement.friendly_id
+  end
+
+  protected
+  def resque_solr_update
+    Resque.enqueue(Jobs::SolrUpdate, self.class.to_s, id)
+  end
+
+  def resque_solr_remove
+    Resque.enqueue(Jobs::SolrRemove, self.class.to_s, id)
   end
 end

@@ -64,11 +64,8 @@ class Api::ActionPagesController < Api::BaseController
 
   def donation_payment_error
     page = movement.find_published_page(params[:id])
-    donation_error = DonationError.new({ :movement => movement, :action_page => page }
-                                          .merge((params[:payment_error_data] || {})
-                                          .merge(params[:member_info] || {})).symbolize_keys!)
-    PaymentErrorMailer.delay.report_error(donation_error)
-
+    new_params = { :movement => movement.id, :action_page => page.id }.merge(params[:payment_error_data] || {}).merge(params[:member_info] || {}).symbolize_keys!
+    Resque.enqueue(Jobs::SendDonationError, new_params)
     render :nothing => true, :status => :ok
   end
 

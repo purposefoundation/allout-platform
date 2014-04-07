@@ -742,7 +742,6 @@ describe Api::ActionPagesController do
 
   describe 'donation_payment_error' do
     before :each do
-      Delayed::Worker.delay_jobs = false
       ActionMailer::Base.delivery_method = :test
     end
 

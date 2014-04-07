@@ -1,6 +1,6 @@
 <%= form_for([:admin, @movement, @email]) do |f| %>
 
-  <% if @blast.has_pending_jobs? && !@email.delayed_job_id.blank? %>
+  <% if @blast.has_pending_jobs? && !@email.run_at.blank? %>
     <p class="warning full top">This email is scheduled for delivery. Changes made will not apply to blasts already scheduled.</p>
   <% end %>
 
@@ -37,7 +37,7 @@
       <span class="status"></span> <%= f.submit "Save", :name => "save" %>
     </div>
   </div>
-  <% if @blast.has_pending_jobs? && !@email.delayed_job_id.blank? %>
+  <% if @blast.has_pending_jobs? && !@email.run_at.blank? %>
     <p class="warning full bottom">This email is scheduled for delivery. Changes made will not apply to blasts already scheduled.</p>
   <% end %>
 

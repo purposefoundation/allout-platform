@@ -1,0 +1,5 @@
+production:
+  solr:
+    hostname: <%= ENV['SOLR_HOSTNAME'] %>
+    port: <%= ENV['SOLR_PORT'] %>
+    path: <%= ENV['SOLR_PATH'] %>

@@ -3,12 +3,10 @@ require "spec_helper"
 describe Admin::UsersController do
   include Devise::TestHelpers # to give your spec access to helpers
 
-  before { Delayed::Worker.delay_jobs = false } # TODO Enable this globally. Never execute async in tests.
-
   before :each do
     @user = FactoryGirl.create(:platform_user, :first_name => "Test", :last_name => "User")
 
-    @movement = FactoryGirl.create(:movement)    
+    @movement = FactoryGirl.create(:movement)
     # mock up an authentication in the underlying warden library
     request.env['warden'] = mock(Warden, :authenticate => FactoryGirl.create(:platform_user, :is_admin => true),
                                          :authenticate! => FactoryGirl.create(:platform_user, :is_admin => true))
@@ -16,17 +14,17 @@ describe Admin::UsersController do
 
   describe "responding to GET index" do
     it "should query solr to display all users paginated" do
-      get :index, :movement_id=>@movement.id 
+      get :index, :movement_id=>@movement.id
       Sunspot.session.should be_a_search_for(PlatformUser)
       Sunspot.session.should have_search_params(:paginate, :page => 1, :per_page => Admin::UsersController::PAGE_SIZE)
     end
     it "should query solr to display paginated search results with a keyword specified" do
-      get :index, :query => "KittenS", :movement_id=>@movement.id 
+      get :index, :query => "KittenS", :movement_id=>@movement.id
       Sunspot.session.should be_a_search_for(PlatformUser)
       Sunspot.session.should have_search_params(:keywords, "KittenS")
     end
     it "should query solr to display admins only if the checkbox is selected" do
-      get :index, :admins_only => "admins_only", :movement_id=>@movement.id 
+      get :index, :admins_only => "admins_only", :movement_id=>@movement.id
       Sunspot.session.should be_a_search_for(PlatformUser)
       Sunspot.session.should have_search_params(:with, :is_admin, 1)
     end
@@ -37,8 +35,8 @@ describe Admin::UsersController do
       it "should create a user and redirect to the index page" do
         movement = FactoryGirl.create(:movement)
         post :create, :movement_id => movement.id, :user => {
-          :email => "hello@kittypetition.org", 
-          :first_name => "Hello", 
+          :email => "hello@kittypetition.org",
+          :first_name => "Hello",
           :last_name => "Kitty",
           :user_affiliations_attributes => {
             "0" => {
@@ -59,8 +57,8 @@ describe Admin::UsersController do
           :first_name => "Hello",
           :last_name => "Kitty",
           :user_affiliations_attributes => {
-            "0" => { 
-              :movement_id => movement.id, 
+            "0" => {
+              :movement_id => movement.id,
               :role =>"campaigner", :id=>nil
         }}}
 
@@ -73,7 +71,7 @@ describe Admin::UsersController do
 
     describe "with invalid params" do
       it "should not save the user and re-render the form" do
-        post :create, :user => nil, :movement_id=>@movement.id 
+        post :create, :user => nil, :movement_id=>@movement.id
         @user = assigns(:user)
         @user.should be_new_record
         response.should render_template("users/new")

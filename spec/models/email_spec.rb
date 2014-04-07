@@ -287,7 +287,6 @@ describe Email do
     xit 'should return false when there is an exception' do
       job_double = double()
       job_double.should_receive(:destroy_all).and_raise("Some Exception")
-      Delayed::Job.should_receive(:where).with(:id => 17, :locked_at => nil).and_return(job_double)
       email = create(:email, :delayed_job_id => 17)
       email.cancel_schedule.should be_false
     end

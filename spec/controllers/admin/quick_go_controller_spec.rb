@@ -5,7 +5,7 @@ describe Admin::QuickGoController, solr: true do
     request.env['warden'] = mock(Warden, :authenticate => FactoryGirl.create(:user, :is_admin => true),
                                  :authenticate! => FactoryGirl.create(:user, :is_admin => true))
   end
-  it 'should return results' do
+  xit 'should return results' do
     term = 'Awesome stuff'
     movement = create(:movement)
     campaign = create(:campaign, :movement => movement, :name => term)

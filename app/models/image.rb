@@ -26,9 +26,9 @@ class Image < ActiveRecord::Base
     ["Home page slideshow image (416x224)", "416x224"],
     ["Campaign page main/header image (528px wide)", "528x"],
     ["Campaign page sidebar image (304px wide)", "304x"],
-    ["Full width image (873px wide)", "873x"], 
-    ["Small photo (200px wide)", "200x"], 
-    ["Medium photo (360px wide)", "360x"], 
+    ["Full width image (873px wide)", "873x"],
+    ["Small photo (200px wide)", "200x"],
+    ["Medium photo (360px wide)", "360x"],
     ["Custom", ""]
   ]
 
@@ -38,8 +38,8 @@ class Image < ActiveRecord::Base
     :default_style => :full,
     :whiny => true,
     :whiny_thumbnails => true,
-    :styles => { 
-      :thumbnail => "120x120>", 
+    :styles => {
+      :thumbnail => "120x120>",
       :full => { :processors => [:resizer] }
     }
   }
@@ -58,7 +58,7 @@ class Image < ActiveRecord::Base
 
   def self.has_attached_file_via_filesystem
     has_attached_file :image, ATTACHED_FILE_OPTS.merge(
-      :storage => :filesystem, 
+      :storage => :filesystem,
       :path => Rails.root.join('public', 'system', FILE_TEMPLATE).to_s
     )
   end
@@ -79,22 +79,23 @@ class Image < ActiveRecord::Base
 
   acts_as_user_stampable
 
-  searchable do
+  searchable :auto_index => false, :auto_remove => false do
     time :created_at
-    text :image_file_name_text_substring do 
+    text :image_file_name_text_substring do
       image_file_name
     end
-    text :image_description_text_substring do 
+    text :image_description_text_substring do
       image_description
     end
     integer :movement_id
   end
-  handle_asynchronously :solr_index
+  after_commit   :resque_solr_update, :if => :persisted?
+  before_destroy :resque_solr_remove
 
   belongs_to :movement
 
   def attachment?
-    image? && 
+    image? &&
       !image_file_name.blank? &&
       (S3[:enabled] || File.exists?(image.path(:thumbnail)))
   end
@@ -102,19 +103,27 @@ class Image < ActiveRecord::Base
   def name(format = :original)
     "#{movement_slug}_image_#{id}_#{format.to_s}#{File.extname(image_file_name)}"
   end
-  
+
   def movement_slug
     self.movement.friendly_id
   end
 
   private
 
-  
-  def measure_dimensions    
+
+  def measure_dimensions
     if tmp_img = image.queued_for_write[:full]
       dimensions = Paperclip::Geometry.from_file(tmp_img)
       self.image_width = dimensions.width
       self.image_height = dimensions.height
     end
+  end
+
+  def resque_solr_update
+    Resque.enqueue(Jobs::SolrUpdate, self.class.to_s, id)
+  end
+
+  def resque_solr_remove
+    Resque.enqueue(Jobs::SolrRemove, self.class.to_s, id)
   end
 end
