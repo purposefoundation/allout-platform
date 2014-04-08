@@ -56,8 +56,11 @@ class List < ActiveRecord::Base
 
     result = execute_query :select_values, relation, self.rules, &block
     if options[:limit].is_a? Fixnum
-      result.sample(options[:limit])
+      Rails.logger.debug "LIST_CUTTER_DEBUG: Limit set to #{options[:limit]} for Email ID #{email.id}, sent to #{user_ids.count}"
+      return result.sample(options[:limit])
     else
+      Rails.logger.debug "LIST_CUTTER_DEBUG: No limit set for Email ID #{email.id}, sent to #{user_ids.count}"
+      Rails.logger.debug "LIST_CUTTER_DEBUG: Options: #{options.inspect}"
       return result
     end
   end
