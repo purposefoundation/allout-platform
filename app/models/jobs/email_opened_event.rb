@@ -10,7 +10,11 @@ module Jobs
       if email_tracking_hash.valid?
         user =  email_tracking_hash.user
         email = email_tracking_hash.email
-        UserActivityEvent.email_viewed!(user, email)
+        begin
+          UserActivityEvent.email_viewed!(user, email)
+        rescue Exception => e
+          Rails.logger.debug "Failed to Record Email View: #{e}"
+        end
       else
         Rails.logger.debug "Invalid Decoded Email Tracking Hash: #{email_tracking_hash}"
         Rails.logger.debug "Invalid tracking hash: #{t}"

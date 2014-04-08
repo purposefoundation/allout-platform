@@ -1,13 +1,6 @@
 module Jobs
   class SendgridEvent
     extend Resque::Plugins::Retry
-    retry_criteria_check do |exception, *args|
-      if exception.message =~ /Sendgrid submitted an event for a non-member:/
-        false #do not retry
-      else
-        true
-      end
-    end
 
     @retry_limit = 25
     @retry_delay = 120
@@ -17,7 +10,9 @@ module Jobs
       Resque.logger.debug "Starting sendgrid event handler with params: #{params.inspect}"
 
       member = User.find_by_movement_id_and_email(movement_id, params['email'])
-      raise "Sendgrid submitted an event for a non-member: #{params['email']}" if !member
+      if !member
+        return
+      end
       unless params['event'] == "unsubscribe" && params['email_id'].blank?
         blast_email = Email.find(params['email_id'])
       end

@@ -21,14 +21,14 @@ describe Api::SendgridController do
       post :event_handler, :movement_id => allout.id, :email_id => default_email.id, :event=>'nothing'
       response.code.should == '200'
     end
-
-    it 'should raise an error if member is nil' do
+    #these errors are common, and are causing false positives in the error reporting, so now they just log to the Rails.logger
+    xit 'should raise an error if member is nil' do
       expect {
         post :event_handler, :movement_id => therules.id, :email => 'member-not-found@movement.com', :event => 'nothing', :email_id=>default_email.id
       }.to raise_error
     end
     
-    it 'should raise an error if email_id is nil' do
+    xit 'should raise an error if email_id is nil' do
       expect {
         post :event_handler, :movement_id => therules.id, :email => 'member-not-found@movement.com', :event => 'nothing'
       }.to raise_error
