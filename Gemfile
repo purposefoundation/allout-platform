@@ -15,7 +15,7 @@ gem 'yui-compressor', :git => "git://github.com/oleander/ruby-yui-compressor.git
 gem 'will_paginate' #, '~>3.0.3'
 gem 'paranoia'
 gem 'acts_as_list'
-
+gem "skylight"
 gem 'sendgrid' #, '0.1.4'
 gem 'paperclip' #, '2.6.0'
 gem 'aws-s3'

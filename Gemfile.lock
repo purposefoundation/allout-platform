@@ -408,6 +408,8 @@ GEM
       rack (~> 1.4)
       rack-protection (~> 1.4)
       tilt (~> 1.3, >= 1.3.4)
+    skylight (0.3.10)
+      activesupport (>= 3.0.0)
     sort_alphabetical (0.1.3)
       activesupport
     spork (1.0.0rc3)
@@ -547,6 +549,7 @@ DEPENDENCIES
   sendgrid
   shoulda-matchers
   simplecov
+  skylight
   spork-rails
   subcontractor
   sunspot_matchers
