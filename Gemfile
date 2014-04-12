@@ -60,7 +60,7 @@ gem 'resque'
 gem 'resque-retry'
 gem 'resque-scheduler'
 gem 'byebug'
-gem 'spreedly'
+gem 'spreedly', '~> 2.0.9'
 
 group :assets do
   gem 'uglifier', '>= 1.0.3'
@@ -91,6 +91,7 @@ group :development, :staging do
 end
 
 group :development, :test do
+  gem 'pry', '~> 0.9'
   gem "rails_best_practices" #, "~> 1.7.2"
   gem 'jslint_on_rails'
   gem 'rspec-rails' #, :require => false #, '~> 2.8.1'
