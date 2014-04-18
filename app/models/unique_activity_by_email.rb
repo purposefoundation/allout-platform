@@ -22,8 +22,8 @@ class UniqueActivityByEmail < ActiveRecord::Base
     update_email_activities only_events_created_after, time_now
   end
 
-  def self.force_update_all!
-    only_events_created_after = "1/1/2000".to_datetime.utc.strftime('%Y-%m-%d %H:%M:%S')
+  def self.force_update_all!(start_date)
+    only_events_created_after = start_date.to_datetime.utc.strftime('%Y-%m-%d %H:%M:%S')
     time_now = Time.now.utc.strftime('%Y-%m-%d %H:%M:%S')
 
     update_other_activities only_events_created_after, time_now
