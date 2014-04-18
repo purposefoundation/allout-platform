@@ -32,21 +32,25 @@ transactions and one for 501-c-4s. On the donation form, we check the
 `content_module.classification` attribute, and pass that value
 (`501-c-3` or `501-c-4`) to Spreedly as
 an additional parameter on the [transaparent
-redirect](http://docs.spreedly.com/payment-methods/adding-with-redirect#using-the-redirect-url) to determine which Spreedly environment to use.
+redirect](http://docs.spreedly.com/payment-methods/adding-with-redirect#using-the-redirect-url)
+to determine which Spreedly environment to use.
 
 ### Payment Gateways
 Spreedly allows for multiple payment gateways. Each gateway has a token,
 which must me passed when making purchases.
 
-The gateway tokens are currently stored with other application constants in
-`config/constants.yml`. The application determines which gateway gets
-used in `SpreedlyClient#get_gateway_token` via the donation currency.
+The gateway tokens are determined from environment varaibles following the pattern of
+`SPREEDLY_#{classification}_GATEWAY#{currency}`.
+
+For a 501C3 classification and a USD currency the needed environment varaible would be:
+
+  SPREEDLY_501C3_GATEWAY_USD
 
 Each gateway requires different credentials. Spreedly provides
 [documentation](http://docs.spreedly.com/gateways/adding) for adding a new gateway to the
 application. The `gateway_token` that gets returned should be added to the
-`config/constants.yml` for the given currency. Unique gateway tokens must be added for each Spreedly environment that All Out
-creates (currently 501C3 and 501C4).
+`config/constants.yml` for the given currency. Unique gateway tokens must be added for each
+Spreedly environment that All Out creates (currently 501C3 and 501C4).
 
 ## Post-Recurly Migration
 Per Spreedly, when the credit cards are transferred from Recurly to
@@ -55,11 +59,12 @@ payment_method_token. This relationship will be made available via a
 JSON file that Spreedly will provide.
 
 All active, recurring donations should be updated with their respective
-Spreedly payment_method_tokens. 
+Spreedly payment_method_tokens.
 
 **Active, recurring donations for which you'd like to enqueue recurring
 payments for must have the following attributes set:**
-* `classification` - (`501-c-3` or `501-c-4`) is required by `SpreedlyClient#initialize` to create the correct Spreedly environment.
+* `classification` - (`501-c-3` or `501-c-4`) is required by `SpreedlyClient#initialize`
+to create the correct Spreedly environment.
 * `currency` - will be required when the purchase is attempted on
   Spreedly
 * `frequency` - `one_off`, `weekly`, `monthly`, `annual`
@@ -105,9 +110,9 @@ To ensure PCI compliance, this data should be posted to
 `https://core.spreedly.com/v1/payment_methods`.
 
 You can arbitrarily [pass
-data](http://docs.spreedly.com/payment-methods/adding-with-redirect#using-passthrough-data) to be stored on the payment method by
-specifying data fields in the form; you'll want to pass the following in
-order to create a valid donation and transaction:
+data](http://docs.spreedly.com/payment-methods/adding-with-redirect#using-passthrough-data)
+to be stored on the payment method by specifying data fields in the form; you'll want to pass
+the following in order to create a valid donation and transaction:
 * `data[frequency]` - `one_off`, `weekly`, `monthly`, or `annual`
 * `data[amount]` - amount for the transaction. This should be passed as
   an amount in cents
