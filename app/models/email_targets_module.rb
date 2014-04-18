@@ -17,6 +17,7 @@
 
 # "Email Targets Ask" module -- requests that user write and send their email or use the default one
 class EmailTargetsModule < ContentModule
+  include RemoveDuplicatesFromPage
   option_fields :default_body, :default_subject, :targets,
                 :button_text, :allow_editing, :emails_goal, :thermometer_threshold,
                 :active, :disabled_title, :disabled_content
@@ -53,10 +54,6 @@ class EmailTargetsModule < ContentModule
 
   def self.for_container?(layout_container)
     layout_container == :sidebar
-  end
-
-  def can_remove_from_page?
-    false
   end
 
   def as_json(opts={})

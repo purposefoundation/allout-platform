@@ -19,6 +19,7 @@
 require 'money'
 
 class DonationModule < ContentModule
+  include RemoveDuplicatesFromPage
   has_many :donations, :foreign_key => :content_module_id
   option_fields :default_currency, :suggested_amounts, :default_amount,
                 :recurring_default_currency, :recurring_suggested_amounts, :recurring_default_amount,
@@ -151,10 +152,6 @@ class DonationModule < ContentModule
 
   def is_a_future_recurring_payment?
     !self.commence_donation_at.blank?
-  end
-
-  def can_remove_from_page?
-    false
   end
 
   def default_currency_set_for_at_least_a_frequency

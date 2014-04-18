@@ -84,7 +84,7 @@ PurposePlatform::Application.configure do
   # with SQLite, MySQL, and PostgreSQL)
   # config.active_record.auto_explain_threshold_in_seconds = 0.5
 
-  config.action_mailer.default_url_options = { :host => "#{Rails.env}.platform.allout.org" }
+  config.action_mailer.default_url_options = { :host => ENV.fetch('PLATFORM_URL'){"platform.allout.org"}}
   #config.action_controller.default_url_options = { :host => 'platform.allout.org' }
 
   # config.action_controller.asset_host = "https://#{S3[:bucket]}.s3.amazonaws.com"

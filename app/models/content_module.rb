@@ -111,7 +111,7 @@ class ContentModule < ActiveRecord::Base
     is_ask?
   end
 
-  def can_remove_from_page?
+  def can_remove_from_page?(page)
     true
   end
 

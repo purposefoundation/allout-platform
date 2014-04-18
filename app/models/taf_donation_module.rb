@@ -19,7 +19,7 @@
 require 'money'
 
 class TafDonationModule < DonationModule
-	TellAFriend::TellAFriendAttributes
+	include RemoveDuplicatesFromPage
 	#TAF Options, will need to figure out someone to make the module include this for us....
 
 	option_fields :share_url,

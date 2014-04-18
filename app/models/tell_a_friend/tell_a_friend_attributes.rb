@@ -32,7 +32,7 @@ module TellAFriend::TellAFriendAttributes
 	  end
   end
 
-  def can_remove_from_page?
+  def can_remove_from_page?(page)
     false
   end
 

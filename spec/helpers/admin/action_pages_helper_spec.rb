@@ -9,20 +9,34 @@ describe Admin::ActionPagesHelper do
   describe 'disabled_class,' do
 		context 'content module is a petition, taf, or donation,' do
 		  it "should return 'disabled'" do
+		  	action_sequence = create(:action_sequence)
+				petition_page = create(:action_page, name: 'Petition', action_sequence: action_sequence)
 				petition_module = FactoryGirl.build(:petition_module)
-				disabled_class(petition_module).should == 'disabled'
+				petition_page.content_modules << petition_module
+				disabled_class(petition_module, petition_page).should == 'disabled'
 
+				action_sequence = create(:action_sequence)
+				taf_page = create(:action_page, name: 'Taf', action_sequence: action_sequence)
 				tell_a_friend_module = FactoryGirl.build(:tell_a_friend_module)
-				disabled_class(tell_a_friend_module).should == 'disabled'
+				taf_page.content_modules << tell_a_friend_module
+				disabled_class(tell_a_friend_module, taf_page).should == 'disabled'
 
+				action_sequence = create(:action_sequence)
+				donation_page = create(:action_page, name: 'Donation', action_sequence: action_sequence)
 				donation_module = FactoryGirl.build(:donation_module)
-				disabled_class(donation_module).should == 'disabled'
+				donation_page.content_modules << donation_module
+
+				disabled_class(donation_module, donation_page).should == 'disabled'
 		  end
 		end
 
 		context 'content module is not a petition, taf, or donation,' do
 			it 'should return an empty string' do
-				disabled_class(FactoryGirl.build(:html_module)).should == ''
+				action_sequence = create(:action_sequence)
+				donation_page = create(:action_page, name: 'Donation', action_sequence: action_sequence)
+				html_module = FactoryGirl.build(:html_module)
+				donation_page.content_modules << html_module
+				disabled_class(html_module, donation_page).should == ''
 			end
 		end
   end

@@ -7,7 +7,7 @@
           <%= link_to "", "#add_to_favorites", :class => "add_to_favorites ui-icon ui-icon-heart disabled" %>
         </li>
         <li>
-          <%= link_to "", delete_admin_movement_content_module_path(@movement, :content_module_id => content_module.id, :page_id => page), :remote => true, :method => :delete, :confirm => "Remove #{content_module.class.name.titlecase}?\n\nThis cannot be undone.", :class => "remove_module ui-icon ui-icon-closethick #{disabled_class(content_module)}", :title => "Remove" %>
+          <%= link_to "", delete_admin_movement_content_module_path(@movement, :content_module_id => content_module.id, :page_id => page), :remote => true, :method => :delete, :confirm => "Remove #{content_module.class.name.titlecase}?\n\nThis cannot be undone.", :class => "remove_module ui-icon ui-icon-closethick #{disabled_class(content_module, page)}", :title => "Remove" %>
         </li>
       </ul>
     </div>

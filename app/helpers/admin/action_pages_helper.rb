@@ -23,8 +23,8 @@ module Admin::ActionPagesHelper
     link_to(text, "/admin/#{plural}", :class => "add-module-link #{plural}_module", :target => "_blank")
   end
 
-  def disabled_class(content_module)
-    content_module.can_remove_from_page? ? '' : 'disabled'
+  def disabled_class(content_module, page)
+    content_module.can_remove_from_page?(page) ? '' : 'disabled'
   end
 
   def action_page_type_radio(form, content_module_class = nil)

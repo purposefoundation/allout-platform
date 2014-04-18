@@ -16,6 +16,7 @@
 #
 
 class TellAFriendAskModule < ContentModule
+  include RemoveDuplicatesFromPage
   TWITTER_MAXIMUM = 125
 
   option_fields :email_body, :email_subject, :tweet_text, :html_meta_description
@@ -43,5 +44,6 @@ class TellAFriendAskModule < ContentModule
     self.tweet_text = "Why don't you check out this?" unless self.tweet_text
     self.public_activity_stream_template = "{NAME|A member}, {COUNTRY|} [{HEADER}]" unless self.public_activity_stream_template
   end
+
 
 end

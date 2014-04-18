@@ -17,6 +17,7 @@
 
 # "Petition Ask" module -- requests that user signs a petition
 class PetitionModule < ContentModule
+  include RemoveDuplicatesFromPage
   has_many :petition_signatures, :foreign_key => :content_module_id
   option_fields :signatures_goal, :thermometer_threshold, :button_text, :petition_statement, :custom_fields,
       :comment_label, :comment_text, :comments_enabled
@@ -66,7 +67,7 @@ class PetitionModule < ContentModule
     petition_signature.action_page = page
     if action_info.present? && action_info[:email].present?
       action_info[:email].symbolize_keys!
-      petition_signature.email = Email.find(action_info[:email][:id]) 
+      petition_signature.email = Email.find(action_info[:email][:id])
     end
     petition_signature.comment = action_info[:comment] if action_info.present?
     petition_signature.save
@@ -101,10 +102,6 @@ class PetitionModule < ContentModule
     Rails.cache.fetch(get_count_uri, :expires_in => 30.minutes) do
       fetch_count_from_crowdring(get_count_uri)
     end
-  end
-
-  def can_remove_from_page?
-    false
   end
 
   def as_json(opts={})

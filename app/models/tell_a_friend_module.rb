@@ -17,5 +17,6 @@
 
 class TellAFriendModule < ContentModule
   include TellAFriend::TellAFriendAttributes
+  include RemoveDuplicatesFromPage
   placeable_in SIDEBAR
 end
