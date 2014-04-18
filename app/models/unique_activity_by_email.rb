@@ -1,4 +1,4 @@
-# == Schema Information
+.# == Schema Information
 #
 # Table name: unique_activity_by_emails
 #
@@ -16,6 +16,14 @@
 class UniqueActivityByEmail < ActiveRecord::Base
   def self.update!
     only_events_created_after = self.last_updated_time
+    time_now = Time.now.utc.strftime('%Y-%m-%d %H:%M:%S')
+
+    update_other_activities only_events_created_after, time_now
+    update_email_activities only_events_created_after, time_now
+  end
+
+  def self.force_update_all!
+    only_events_created_after = "1/1/2000".to_datetime.utc.strftime('%Y-%m-%d %H:%M:%S')
     time_now = Time.now.utc.strftime('%Y-%m-%d %H:%M:%S')
 
     update_other_activities only_events_created_after, time_now
