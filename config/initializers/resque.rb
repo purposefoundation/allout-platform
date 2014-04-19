@@ -13,6 +13,8 @@ end
 require 'resque'
 require 'resque-honeybadger'
 require 'resque-retry'
+require 'resque/server'
+require 'resque_scheduler/server'
 
 require 'resque/failure/multiple'
 require 'resque/failure/redis'
