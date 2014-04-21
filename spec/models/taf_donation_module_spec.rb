@@ -232,8 +232,9 @@ describe TafDonationModule do
     end
 
     it "should make frequency optional when suggested amounts and default currency are set" do
-      dm = FactoryGirl.create(:taf_donation_module, 
-                              :frequency_options => {'one_off' => 'default', 'monthly' => 'hidden', 'weekly' => 'hidden'}, 
+      dm = FactoryGirl.create(:taf_donation_module,
+                              :frequency_options => {'one_off' => 'default', 'monthly' => 'hidden',
+                                                     'weekly' => 'hidden'},
                               :suggested_amounts => { 'usd' => '1,2,3', 'eur' => '1,2,3', 'brl' => '1,2,3' },
                               :default_currency => 'usd',
                               :default_amount => {'usd' => '1'})
@@ -245,7 +246,7 @@ describe TafDonationModule do
       dm.recurring_default_currency = 'eur'
       dm.save
 
-      dm.available_frequencies_for_select.should == [["Donate Once", "one_off"], ["Donate Monthly", "monthly"]]      
+      dm.available_frequencies_for_select.should == [["Donate Once", "one_off"], ["Donate Monthly", "monthly"]]
     end
   end
 

@@ -133,7 +133,9 @@ class DonationModule < ContentModule
   end
 
   def available_frequencies_for_select
-    frequency_options.reject { |frequency, option| option == 'hidden' }.map { |frequency, option| [FREQUENCY_LABELS[frequency.to_sym], frequency] }
+    frequency_options.reject { |frequency, option| option == 'hidden' }.map do  |frequency, option|
+      [FREQUENCY_LABELS[frequency.to_sym], frequency]
+    end
   end
 
   def default_frequency
@@ -254,11 +256,18 @@ class DonationModule < ContentModule
     end
   end
 
+  def optional_frequency?(frequency)
+    true if frequency_options[frequency] == 'hidden' &&
+      recurring_suggested_amounts.has_key?(frequency) &&
+        !recurring_default_amount.blank? &&
+          !recurring_default_currency.try(:empty?)
+  end
+
   def make_all_configured_frequencies_optional
     frequency_options['one_off'] = 'optional' if frequency_options['one_off'] == 'hidden' && !suggested_amounts.try(:empty?) && !default_currency.try(:blank?) && !default_amount.try(:empty?)
-    frequency_options['weekly'] = 'optional' if frequency_options['weekly'] == 'hidden' && !recurring_suggested_amounts.try(:empty?) && !recurring_default_amount.try(:blank?) && !recurring_default_currency.try(:empty?)
-    frequency_options['monthly'] = 'optional' if frequency_options['weekly'] == 'hidden' && !recurring_suggested_amounts.try(:empty?) && !recurring_default_amount.try(:blank?) && !recurring_default_currency.try(:empty?)
-    frequency_options['annual'] = 'optional' if frequency_options['weekly'] == 'hidden' && !recurring_suggested_amounts.try(:empty?) && !recurring_default_amount.try(:blank?) && !recurring_default_currency.try(:empty?)
+    frequency_options['weekly'] = 'optional' if optional_frequency?('weekly')
+    frequency_options['monthly'] = 'optional' if optional_frequency?('monthly')
+    frequency_options['annual'] = 'optional' if optional_frequency?('annual')
   end
 
   def remove_whitespace(string)
