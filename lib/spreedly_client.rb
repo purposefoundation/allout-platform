@@ -42,8 +42,10 @@ class SpreedlyClient
                                                 currency_code:
                                                   payment_method[:data][:currency].upcase,
                                                 retain_on_success: true,
-                                                merchant_name_descriptor: "All Out",
-                                                merchant_location_descriptor: "http://allout.org")
+                                                merchant_name_descriptor:
+                                                  AppConstants.merchant_name_descriptor,
+                                                merchant_location_descriptor:
+                                                  AppConstants.merchant_location_descriptor)
     transaction_to_hash(transaction)
   rescue Spreedly::TimeoutError
     { :code => 408, :errors => [{ :message => 'The payment system is not responding.' }] }
@@ -55,7 +57,8 @@ class SpreedlyClient
     spreedly_payment_method = @spreedly.find_payment_method(payment_method_token)
     payment_method = payment_method_to_hash(spreedly_payment_method)
     if payment_method[:data][:amount].blank? || payment_method[:data][:frequency].blank?
-      return { :code => 422, :errors => [{ :attribute => 'amount', :message => 'The donation amount or frequency is not valid.' }] }
+      return { :code => 422, :errors => [{ :attribute => 'amount',
+               :message => 'The donation amount or frequency is not valid.' }] }
     end
     classify_payment_method(payment_method)
   rescue Spreedly::TimeoutError

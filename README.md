@@ -35,22 +35,25 @@ an additional parameter on the [transaparent
 redirect](http://docs.spreedly.com/payment-methods/adding-with-redirect#using-the-redirect-url)
 to determine which Spreedly environment to use.
 
+The AppConstants `merchant_name_descriptor` and `merchant_location_descriptor` will be what
+is used to list the charge on a donator's statement.
+
 ### Payment Gateways
 Spreedly allows for multiple payment gateways. Each gateway has a token,
 which must me passed when making purchases.
 
-The gateway tokens are determined from environment varaibles following the pattern of
-`SPREEDLY_#{classification}_GATEWAY#{currency}`.
-
-For a 501C3 classification and a USD currency the needed environment varaible would be:
-
-  SPREEDLY_501C3_GATEWAY_USD
-
 Each gateway requires different credentials. Spreedly provides
 [documentation](http://docs.spreedly.com/gateways/adding) for adding a new gateway to the
-application. The `gateway_token` that gets returned should be added to the
-`config/constants.yml` for the given currency. Unique gateway tokens must be added for each
-Spreedly environment that All Out creates (currently 501C3 and 501C4).
+application. The `gateway_token` that gets returned should be added as an environment
+variable for the given classification and currency. Unique gateway tokens must be added for each
+Spreedly environment (eg.501C3 and 501C4).
+
+The gateway tokens are determined from environment variables following the pattern of
+`SPREEDLY_#{classification}_GATEWAY#{currency}`.
+
+For a 501C3 classification and a USD currency the needed environment variable would be:
+
+  SPREEDLY_501C3_GATEWAY_USD
 
 ## Post-Recurly Migration
 Per Spreedly, when the credit cards are transferred from Recurly to

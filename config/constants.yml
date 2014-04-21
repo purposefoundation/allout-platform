@@ -15,14 +15,16 @@ development: &default
   s3_bucket_uri: "https://<%= ENV['S3_BUCKET_NAME'] %>.s3.amazonaws.com"
   enable_unfiltered_blasting: <%= ENV['ENABLE_UNFILTERED_BLASTING'] || false %>
   authenticate_api_calls: <%= ENV["AUTHENTICATE_API_CALLS"] || false %>
-  readonly_database_url: <%= ENV["READONLY_DATABASE_URL"] %> 
+  readonly_database_url: <%= ENV["READONLY_DATABASE_URL"] %>
+  merchant_name_descriptor: 'All Out'
+  merchant_location_descriptor: 'http://www.allout.org'
   blast_cc_email: "test-blasts@allout.org"
   join_email_to: <%= ENV['JOIN_EMAIL_TO'] || 'does-not-matter@purpose.org' %>
   sendgrid_api_user: systems@allout.org
   sendgrid_api_password: <%= ENV['SENDGRID_API_PASSWORD'] %>
   devise_from_email: <%= ENV['DEVISE_MAIL_SENDER_ADDRESS'] || 'info@allout.org' %>
   unsubscribe_email: <%= ENV['UNSUBSCRIBE_EMAIL'] || 'info@allout.org' %>
-  whitelisted_email_test_domains: 
+  whitelisted_email_test_domains:
     - thoughtworks.com
     - purpose.com
     - purpose.org
@@ -43,12 +45,12 @@ test:
   google_maps_api_key: "AIzaSyD5j7OTcBwQFT1M_brBeVvI8pSFN2K7-7k"
   send_grid_health_check_uri: ""
   s3_bucket_uri: "//xyz.s3.amazonaws.com"
-  whitelisted_email_test_domains: 
+  whitelisted_email_test_domains:
     - thoughtworks.com
     - purpose.com
     - purpose.org
     - allout.org
-    - niedfeldt.com 
+    - niedfeldt.com
     - generic.org
     - yourdomain.org
     - yourotherdomain.com
