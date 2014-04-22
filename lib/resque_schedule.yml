@@ -1,0 +1,36 @@
+update_membership_calculator:
+  every:
+    - "5m"
+    - :first_in: '120s'
+  class: "Jobs::UpdateMemberCountCalculator"
+  queue: counters
+  description: "This job will update the membership counter"
+
+update_campaign_share_stat:
+  every:
+    - "7m"
+  class: "Jobs::UpdateCampaignShareStat"
+  queue: counters
+  description: "This job will update the share counter"
+
+update_blast_stats:
+  every:
+    - "10m"
+  class: "Jobs::UpdateUniqueActivityByEmail"
+  queue: counters
+  description: "This job will update the membership counter"
+
+clean_preview_pages:
+  every:
+    - "1d"
+  class: "Jobs::CleanPreviewPages"
+  queue: counters
+  description: "Cleans the preview pages"
+
+homepage_draft_cleanup:
+  every:
+    - "1d"
+    - :first_in: '120s'
+  class: "Jobs::CleanHomepageDrafts"
+  queue: counters
+  description: "Cleans the homepage drafts"

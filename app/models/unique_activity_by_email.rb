@@ -25,6 +25,7 @@ class UniqueActivityByEmail < ActiveRecord::Base
   def self.force_update!(start_date, end_date)
     only_events_created_after = start_date.to_datetime.utc.strftime('%Y-%m-%d %H:%M:%S')
     only_events_created_before = end_date.to_datetime.utc.strftime('%Y-%m-%d %H:%M:%S')
+    self.where(:updated_at => only_events_created_after..only_events_created_before).delete_all
     time_now = Time.now.utc.strftime('%Y-%m-%d %H:%M:%S')
 
     update_other_activities_between only_events_created_after, only_events_created_before, time_now

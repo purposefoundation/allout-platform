@@ -26,3 +26,5 @@ end
 
 Resque::Failure::MultipleWithRetrySuppression.classes = [Resque::Failure::Redis, Resque::Failure::Honeybadger]
 Resque::Failure.backend =  Resque::Failure::MultipleWithRetrySuppression
+
+Resque.schedule = YAML.load_file('lib/resque_schedule.yml')

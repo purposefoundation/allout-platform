@@ -1,5 +1,6 @@
 module Jobs
   class UpdateShareCache
+  	include Resque::Plugins::UniqueJob
     @queue = :update_share_cache
   	extend Resque::Plugins::ExponentialBackoff
 

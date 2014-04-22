@@ -1,5 +1,6 @@
 module Jobs
   class UpdatePageActionTakenCounter
+  	include Resque::Plugins::UniqueJob
   	extend Resque::Plugins::ExponentialBackoff
     @queue = :update_page_action_taken_counter
 
