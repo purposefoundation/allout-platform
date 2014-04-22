@@ -154,7 +154,7 @@ class Email < ActiveRecord::Base
     true
   rescue Exception => e
     puts "Exceptions #{e.message}"
-    Rails.logger.error "Tried deleting jobs with ids: #{self.delayed_job_id} - Original exception: #{e.message}"
+    Rails.logger.error "Tried deleting emails with ids: #{args[0]['email_id']} - Original exception: #{e.message}"
     false
   end
 end

@@ -32,6 +32,16 @@ class UniqueActivityByEmail < ActiveRecord::Base
     update_email_activities_between only_events_created_after, only_events_created_before, time_now
   end
 
+  def self.force_update_all!
+    delete_all
+    current_date = Date.parse("1/1/2008")
+    while current_date <= Date.current do
+      next_date = current_date + 7.days
+      UniqueActivityByEmail.force_update!(current_date, next_date)
+      current_date = next_date
+    end
+  end
+
   def self.reset!
     delete_all
     update!

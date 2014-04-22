@@ -1,6 +1,9 @@
 class Api::SendgridController < Api::BaseController
-  def event_handler  
-    Resque.enqueue(Jobs::SendgridEvent,@movement.id,params)
+  def event_handler
+  	events = JSON.parse(request.body.read)
+  	events.each do |each_param|
+    	Resque.enqueue(Jobs::SendgridEvent,@movement.id,each_param)
+    end
     head :ok
   end
 end
