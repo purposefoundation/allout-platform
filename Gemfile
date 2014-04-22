@@ -59,6 +59,7 @@ gem 'font-awesome-rails'
 gem 'resque'
 gem 'resque-retry'
 gem 'resque-scheduler'
+gem 'resque-loner'
 
 group :assets do
   gem 'uglifier', '>= 1.0.3'

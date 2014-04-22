@@ -1,5 +1,6 @@
 Dir["../../app/models/jobs/*.rb"].each { |file| require file }
 require 'resque'
+require 'resque-loner'
 require 'resque-honeybadger'
 require 'resque-retry'
 require 'resque_scheduler'

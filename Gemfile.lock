@@ -339,6 +339,8 @@ GEM
     resque-honeybadger (1.0.2)
       honeybadger
       resque (>= 1.8.0)
+    resque-loner (1.3.0)
+      resque (~> 1.0)
     resque-retry (1.0.0)
       resque (>= 1.10.0)
       resque-scheduler (>= 1.9.9)
@@ -534,6 +536,7 @@ DEPENDENCIES
   redis-rails
   resque
   resque-honeybadger
+  resque-loner
   resque-retry
   resque-scheduler
   roo

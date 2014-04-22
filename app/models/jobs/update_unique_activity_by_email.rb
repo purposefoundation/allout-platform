@@ -1,5 +1,6 @@
 module Jobs
   class UpdateUniqueActivityByEmail
+  	include Resque::Plugins::UniqueJob
     @queue = :counters
 
     def self.perform
