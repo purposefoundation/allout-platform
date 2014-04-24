@@ -6,7 +6,7 @@ module Jobs
     @retry_delay = 120
     @queue = :event_tracking
 
-    def self.perform(movement_id,all_params)
+    def self.perform(movement_id,params)
       Resque.logger.debug "Starting sendgrid event handler with params: #{params.inspect}"
 
       member = User.find_by_movement_id_and_email(movement_id, params['email'])
