@@ -137,9 +137,8 @@ class Email < ActiveRecord::Base
         :current_job_id => current_job_index,
         :limit => limit
     }
-    scheduled_time_in_app_time_zone = run_at.in_time_zone(Time.zone)
-    Rails.logger.debug "Scheduling job for email #{id} to go out at #{scheduled_time_in_app_time_zone}. run_at time is #{run_at} "
-    Resque.enqueue_at(scheduled_time_in_app_time_zone, Jobs::BlastJob, :email_id => self.id, :list_id => blast.list.id, :options => options)
+    Rails.logger.debug "Scheduling job for email #{id} to go out at #{run_at} "
+    Resque.enqueue_at(run_at, Jobs::BlastJob, :email_id => self.id, :list_id => blast.list.id, :options => options)
     self.run_at = run_at
     self.save
   end
