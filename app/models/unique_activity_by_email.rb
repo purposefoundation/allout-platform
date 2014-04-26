@@ -109,7 +109,7 @@ class UniqueActivityByEmail < ActiveRecord::Base
   def self.update_other_activities_between(last_updated_at, upper_limit, time_now)
     sql = <<-SQL
       INSERT INTO `#{self.table_name}` (email_id, activity, total_count, updated_at)
-      SELECT email_id, activity, COUNT(DISTINCT email_id, activity, user_id) as count, TIMESTAMP('#{upper_limit}', '%d-%m-%Y %h:%i:%s')
+      SELECT email_id, activity, COUNT(DISTINCT email_id, activity, user_id) as count, MAX(created_at)
         FROM `#{UserActivityEvent.table_name}`
         WHERE email_id IS NOT NULL
         AND activity NOT IN ('email_viewed', 'email_sent', 'email_clicked', 'email_spammed')
@@ -152,7 +152,7 @@ class UniqueActivityByEmail < ActiveRecord::Base
 
   def self.query_for_activity_stats_by_push_between(push_id, last_updated_at, upper_limit, time_now, activity)
     "INSERT INTO #{self.table_name} (email_id, activity, total_count, updated_at)
-     SELECT email_id, '#{activity.to_s}', count(distinct email_id, user_id) as count, TIMESTAMP('#{upper_limit}', '%d-%m-%Y %h:%i:%s')
+     SELECT email_id, '#{activity.to_s}', count(distinct email_id, user_id) as count, MAX(created_at)
      FROM #{Push.activity_class_for(activity).table_name}
      WHERE push_id = #{push_id}
      AND created_at > '#{last_updated_at}'
