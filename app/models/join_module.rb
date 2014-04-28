@@ -16,6 +16,7 @@
 #
 
 class JoinModule < ContentModule
+  include RemoveDuplicatesFromPage
   option_fields :button_text,
       :join_statement,
       :post_join_title,
@@ -68,10 +69,6 @@ class JoinModule < ContentModule
       user.update_attributes(:join_email_sent => true)
       send_join_email(user, page.movement)
     end
-  end
-
-  def can_remove_from_page?
-    false
   end
 
   def active?
