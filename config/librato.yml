@@ -1,0 +1,3 @@
+production:
+  user: <%= ENV['LIBRATO_USER'] %>
+  token: <%= ENV['LIBRATO_API_KEY'] %>
