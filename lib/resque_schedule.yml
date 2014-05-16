@@ -16,7 +16,7 @@ update_campaign_share_stat:
 update_blast_stats:
   every:
     - "10m"
-  class: "Jobs::UpdateUniqueActivityByEmail"
+  class: "Jobs::UpdateUniqueActivityByEmailNoLoner"
   queue: counters
   description: "This job will update the membership counter"
 
