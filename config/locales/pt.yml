@@ -211,5 +211,5 @@ pt:
     donation_module:
       default_donate_text: Doar
   monthly: "mensal"
-  donation_cancellation_message: "Para cancelar ou modificar sua contribuição mensal, escreva para donate@allout.org."
+  donation_cancellation_message: "Para cancelar ou modificar sua doação, escreva para donate@allout.org"
   transaction_id: "Transação #:"

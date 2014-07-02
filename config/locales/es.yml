@@ -204,5 +204,5 @@ es:
       default_donate_text: Donar
   one_off: ''
   monthly: "mensuales"
-  donation_cancellation_message: "Para cancelar o modificar tu donación mensual, escríbenos a donate@allout.org."
+  donation_cancellation_message: "Para cancelar o modificar tu donación, escríbenos a donate@allout.org"
   transaction_id: "Número de operación:"

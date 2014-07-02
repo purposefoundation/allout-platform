@@ -209,5 +209,5 @@ fr:
     donation_module:
       default_donate_text: Faire Un Don
   monthly: "mensuel"
-  donation_cancellation_message: "Pour annuler ou modifier votre don mensuel, écrivez-nous à donate@allout.org"
+  donation_cancellation_message: "Pour annuler ou modifier votre don, écrivez-nous à donate@allout.org"
   transaction_id: "Numéro de transaction :"

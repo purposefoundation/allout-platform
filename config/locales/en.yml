@@ -50,5 +50,5 @@ en:
       default_donate_text: "Donate!"
   one_off: ''
   monthly: "monthly"
-  donation_cancellation_message: "To cancel or modify your recurring donation, email us at donate@allout.org"
+  donation_cancellation_message: "To cancel or modify your donation, email us at donate@allout.org"
   transaction_id: "Transaction ID:"
